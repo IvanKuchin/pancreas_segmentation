@@ -1,6 +1,6 @@
-import os
 import tensorflow as tf
 import numpy as np
+import time
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 INPUT_DIMS = tf.constant([256, 256, 256])
@@ -141,30 +141,33 @@ def craft_network():
 
     return tf.keras.models.Model(inputs=[inputs], outputs = [output_layer])
 
+def run_through_data_wo_any_action(ds_train, ds_valid):
+    print("Train ds:")
+    for idx, (data, label) in enumerate(ds_train):
+        print("---", idx)
+        print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
+        print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype=tf.float32)))
+
+    print("Valid ds:")
+    for idx, (data, label) in enumerate(ds_valid):
+        print("---", idx)
+        print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
+        print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype=tf.float32)))
+
+def predict_on_random_data():
+    for i in range(1, 32):
+        t0 = time.time()
+        pred = model.predict(tf.random.normal([i, 256, 256, 256, 1]))
+        t1 = time.time()
+        print("prediction shape/time:", pred.shape, "/", np.round(t1 - t0))
+
 
 def main():
-    # ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
-    # data, label = next(iter(ds_train))
+    ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
+    # run_through_data_wo_any_action(ds_train, ds_valid)
 
     model = craft_network()
-    # tf.keras.utils.plot_model(model, show_shapes = True, expand_nested = True)
-    # print(model.summary())
-
-    # print(data.shape)
-    # pred = tf.keras.layers.Conv3D(10, kernel_size = 3, strides = 1, padding = "same")(data)
-    # print(pred.shape)
-
-    # print("Train ds:")
-    # for idx, (data, label) in enumerate(ds_train):
-    #     print("---", idx)
-    #     print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
-    #     print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype=tf.float32)))
-    #
-    # print("Valid ds:")
-    # for idx, (data, label) in enumerate(ds_valid):
-    #     print("---", idx)
-    #     print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
-    #     print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype=tf.float32)))
+    predict_on_random_data()
 
 def main1():
     arr1, arr2 = py_read_data_and_label(["c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_data.npy",
