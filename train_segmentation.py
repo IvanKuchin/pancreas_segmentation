@@ -142,6 +142,7 @@ def craft_network():
     return tf.keras.models.Model(inputs=[inputs], outputs = [output_layer])
 
 
+
 def main():
     # ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
     # data, label = next(iter(ds_train))
