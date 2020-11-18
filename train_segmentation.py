@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import time
+import os
 from craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 
 
@@ -104,6 +105,12 @@ def predict_on_random_data(model):
         print("prediction shape/time:", pred.shape, "/", np.round(t1 - t0))
 
 
+def get_tensorboard_log_dir():
+    root_log_dir = os.path.join(os.curdir, "logs")
+    run_id = time.strftime("run_%Y_%m_%d_%H_%M_%S")
+    return os.path.join(root_log_dir, run_id)
+
+
 def main():
     ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
     # run_through_data_wo_any_action(ds_train, ds_valid)
@@ -111,10 +118,16 @@ def main():
     model = craft_network()
     # predict_on_random_data()
 
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
+    tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
+
     model.compile(optimizer = "adam", loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
                   metrics = ['accuracy', 'sparse_categorical_crossentropy'])
 
-    history = model.fit(ds_train, epochs = 1, validation_data = ds_valid)
+    history = model.fit(ds_train, epochs = 20, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])
+
+    model.save("pancreas_segmentation_model.h5")
+
     print("")
     print("---------------")
     print(history.history)
@@ -139,6 +152,3 @@ if __name__ == "__main__":
     main()
     # main1()
     # main2()
-
-
-# 25/Unknown - 438s 18s/step - loss: 0.3738 - accuracy: 0.9191 - sparse_categorical_crossentropy: 0.53792020-11-17 23:25:56.334274: W tensorflow/core/framework/op_kernel.cc:1622] OP_REQUIRES failed at sparse_xent_op.cc:90 : Invalid argument: Received a label value of -1 which is outside the valid range of [0, 2).  Label values: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0

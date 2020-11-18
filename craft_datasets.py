@@ -73,7 +73,7 @@ def expand_dimension(data, label):
 
 def craft_datasets(src_folder, ratio=0.2):
     list_ds = tf.data.Dataset.list_files(src_folder + "*.tfrecord").map(tfrecord_fname_to_patientid).map(
-        lambda patient_id: read_data_and_label(patient_id, src_folder)).map(crop_to_shape).map(random_flip).map(expand_dimension).batch(2)
+        lambda patient_id: read_data_and_label(patient_id, src_folder)).map(crop_to_shape).map(random_flip).map(expand_dimension).batch(2).prefetch(1)
     total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
 
     return list_ds.skip(total_number_of_entries * ratio), list_ds.take(total_number_of_entries * ratio)
