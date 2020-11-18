@@ -111,17 +111,70 @@ class CT150:
 
         return result
 
+    def resize_along_axis(self, tensor, new_size, axis_along):
+        # print("tensor shape: ", tensor.shape)
+        unstacked = [_[tf.newaxis, ..., tf.newaxis] for _ in tf.unstack(tensor, axis = axis_along)]
+        unstacked = [tf.image.resize(_, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR) for _ in unstacked]
+        result = tf.squeeze(tf.stack(unstacked, axis = axis_along))
+        return result
+
+    def resize_3d_image(self, image, dimensions):
+        assert dimensions.shape == (3,)
+        zoomed_img = self.resize_along_axis(image, dimensions[:2], 2)
+        zoomed_img = self.resize_along_axis(zoomed_img, dimensions[1:], 0)
+        return zoomed_img
+
+
+    def print_statistic(self, tensor_old, tensor_new):
+        print("\tshape) {}".format(tensor_new.shape))
+        print("\tmin/max {}/{} -> {}/{}".format(np.min(tensor_old), np.max(tensor_old), np.min(tensor_new), np.max(tensor_new)))
+        print("\t\thistogram origin: {}".format(np.histogram(tensor_old, bins = 10)))
+        print("\t\thistogram zoomed: {}".format(np.histogram(tensor_new, bins = 10)))
+
+
     def preprocess_data(self, data, label):
-        data_processed = (data - data.min()) / (data.max() - data.min())
+        # zoom = AUGMENT_SCALED_DIMS / data.shape
+        # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
+        # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
 
-        zoom = AUGMENT_SCALED_DIMS / data.shape
-        data_processed = scipy.ndimage.zoom(data_processed, zoom, mode="nearest")
-        label_processed = scipy.ndimage.zoom(label, zoom, mode="nearest")
+        data_zoomed = self.resize_3d_image(data, AUGMENT_SCALED_DIMS)
+        label_zoomed = self.resize_3d_image(label, AUGMENT_SCALED_DIMS)
 
-        if data_processed.shape[2] != AUGMENT_SCALED_DIMS[2]:
-            print_error("wrong Z-axis dimensionality " + data_processed.shape[2] + " must be " + AUGMENT_SCALED_DIMS[2]);
+        # self.print_statistic(label, label_zoomed)
 
-        return data_processed, label_processed
+        data_processed = (data_zoomed - np.min(data_zoomed)) / (np.max(data_zoomed) - np.min(data_zoomed))
+        if data_processed.shape != AUGMENT_SCALED_DIMS:
+            print_error("wrong Z-axis dimensionality {} must be {}".format(data_processed.shape, AUGMENT_SCALED_DIMS));
+
+        return data_processed, label_zoomed
+
+    def sanity_check_after_preprocessing(self, data, label):
+        result = True
+
+        # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
+        # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
+
+        if(np.min(data) != 0):
+            result = False
+            print("ERROR: (min(data) == {}) != 0".format(np.min(data)))
+        if(np.mean(data) == 0):
+            result = False
+            print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
+        if(np.max(data) != 1):
+            result = False
+            print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
+
+        if(np.min(label) != 0):
+            result = False
+            print("ERROR: (min(label) == {}) != 0".format(np.min(label)))
+        if(np.mean(label) == 0):
+            result = False
+            print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))
+        if(np.max(label) != 1):
+            result = False
+            print("ERROR: (max(label) == {}) != 1".format(np.max(label)))
+
+        return result
 
     def read_src_data_and_labels_save_as_tfrecords(self):
         folder_list = glob.glob(os.path.join(self.patients_src_folder, "*"))
@@ -151,10 +204,13 @@ class CT150:
 
                     scaled_src_data, scaled_label_data = self.preprocess_data(src_data, label_data)
 
-                    if self.save_tfrecords(patient_id, src_data, label_data, scaled_src_data, scaled_label_data):
-                        pass
+                    if self.sanity_check_after_preprocessing(scaled_src_data, scaled_label_data):
+                        if self.save_tfrecords(patient_id, src_data, label_data, scaled_src_data, scaled_label_data):
+                            pass
+                        else:
+                            print("ERROR: can't save TFRecord patient id:", patient_id)
                     else:
-                        print("ERROR: can't save TFRecord patient id:", patient_id)
+                        print("ERROR: data or label failed sanity check")
 
                 else:
                     print("ERROR: data & labels are not consistent")
@@ -175,7 +231,13 @@ def main3():
     arr2 = np.load(TFRECORD_FOLDER+"/0001_data.npy")
     print(arr2.shape)
 
+def main4():
+    r1 = np.arange(-1024, 2048)
+    norm1 = (r1 - np.min(r1)) / (np.max(r1) - np.min(r1))
+    print("{}/{}".format(np.min(norm1), np.max(norm1)))
+
 if __name__ == "__main__":
     main()
     # main2()
     # main3()
+    # main4()
