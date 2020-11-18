@@ -146,7 +146,7 @@ def craft_network():
         x = step(x)
         x = tf.keras.layers.Concatenate(name = "add_" + step.name)([x, skip_conn])
 
-    output_layer = tf.keras.layers.Conv3DTranspose(1, kernel_size = 3, strides = 2, padding = "same")(x)
+    output_layer = tf.keras.layers.Conv3DTranspose(2, kernel_size = 3, strides = 2, padding = "same")(x)
 
     return tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
@@ -167,7 +167,7 @@ def run_through_data_wo_any_action(ds_train, ds_valid):
         print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)))
 
 
-def predict_on_random_data():
+def predict_on_random_data(model):
     for i in range(1, 32):
         t0 = time.time()
         pred = model.predict(tf.random.normal([i, 256, 256, 256, 1]))
@@ -182,8 +182,8 @@ def main():
     model = craft_network()
     # predict_on_random_data()
 
-    model.compile(optimizer = "adam", loss = tf.keras.losses.BinaryCrossentropy(from_logits = True),
-                  metrics = ['accuracy'])
+    model.compile(optimizer = "adam", loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
+                  metrics = ['accuracy', 'sparse_categorical_crossentropy'])
 
     history = model.fit(ds_train, epochs = 1, validation_data = ds_valid)
     print("")
@@ -193,8 +193,9 @@ def main():
 
 
 def main1():
-    arr1, arr2 = py_read_data_and_label(["c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_data.npy",
-                                         "c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_label.npy"])
+
+    arr1, arr2 = py_read_data_and_label(tf.constant("c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_data.npy"),
+                                        tf.constant("c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_label.npy"))
     print(arr1.shape)
     print(arr2.shape)
 
@@ -209,3 +210,6 @@ if __name__ == "__main__":
     main()
     # main1()
     # main2()
+
+
+# 25/Unknown - 438s 18s/step - loss: 0.3738 - accuracy: 0.9191 - sparse_categorical_crossentropy: 0.53792020-11-17 23:25:56.334274: W tensorflow/core/framework/op_kernel.cc:1622] OP_REQUIRES failed at sparse_xent_op.cc:90 : Invalid argument: Received a label value of -1 which is outside the valid range of [0, 2).  Label values: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
