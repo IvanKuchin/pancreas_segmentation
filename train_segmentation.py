@@ -2,6 +2,9 @@ import tensorflow as tf
 import numpy as np
 import time
 import os
+
+from tensorflow_core.python.keras.callbacks import TensorBoard
+
 from craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 
 
@@ -127,11 +130,6 @@ def main():
     history = model.fit(ds_train, epochs = 20, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])
 
     model.save("pancreas_segmentation_model.h5")
-
-    print("")
-    print("---------------")
-    print(history.history)
-
 
 
 def main1():
