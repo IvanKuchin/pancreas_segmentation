@@ -6,6 +6,7 @@ import glob
 import os
 import re
 import nibabel
+import resize_3d
 
 PATIENTS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/data/"
 LABELS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/labels/"
@@ -111,20 +112,20 @@ class CT150:
 
         return result
 
-    def resize_along_axis(self, tensor, new_size, axis_along):
-        # print("tensor shape: ", tensor.shape)
-        unstacked = [_[tf.newaxis, ..., tf.newaxis] for _ in tf.unstack(tensor, axis = axis_along)]
-        unstacked = [tf.image.resize(_, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR) for _ in unstacked]
-        result = tf.squeeze(tf.stack(unstacked, axis = axis_along))
-        return result
-
-    def resize_3d_image(self, image, dimensions):
-        assert dimensions.shape == (3,)
-        zoomed_img = self.resize_along_axis(image, dimensions[:2], 2)
-        zoomed_img = self.resize_along_axis(zoomed_img, dimensions[1:], 0)
-        return zoomed_img
-
-
+    # def resize_along_axis(self, tensor, new_size, axis_along):
+    #     # print("tensor shape: ", tensor.shape)
+    #     unstacked = [_[tf.newaxis, ..., tf.newaxis] for _ in tf.unstack(tensor, axis = axis_along)]
+    #     unstacked = [tf.image.resize(_, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR) for _ in unstacked]
+    #     result = tf.squeeze(tf.stack(unstacked, axis = axis_along))
+    #     return result
+    #
+    # def resize_3d_image(self, image, dimensions):
+    #     assert dimensions.shape == (3,)
+    #     zoomed_img = self.resize_along_axis(image, dimensions[:2], 2)
+    #     zoomed_img = self.resize_along_axis(zoomed_img, dimensions[1:], 0)
+    #     return zoomed_img
+    #
+    #
     def print_statistic(self, tensor_old, tensor_new):
         print("\tshape) {}".format(tensor_new.shape))
         print("\tmin/max {}/{} -> {}/{}".format(np.min(tensor_old), np.max(tensor_old), np.min(tensor_new), np.max(tensor_new)))
@@ -137,8 +138,8 @@ class CT150:
         # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
         # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
 
-        data_zoomed = self.resize_3d_image(data, AUGMENT_SCALED_DIMS)
-        label_zoomed = self.resize_3d_image(label, AUGMENT_SCALED_DIMS)
+        data_zoomed = resize_3d.resize_3d_image(data, AUGMENT_SCALED_DIMS)
+        label_zoomed = resize_3d.resize_3d_image(label, AUGMENT_SCALED_DIMS)
 
         # self.print_statistic(label, label_zoomed)
 
