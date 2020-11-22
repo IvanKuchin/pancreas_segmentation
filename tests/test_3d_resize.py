@@ -3,6 +3,7 @@ from tools import resize_3d
 import tensorflow as tf
 
 class Resize_3d(unittest.TestCase):
+    '''Unit test to resize_3d function'''
     def test_resize_to_same_size(self):
         arr1 = tf.range(0, 27, dtype = tf.int32)
         arr2 = tf.reshape(arr1, [3, 3, 3])
