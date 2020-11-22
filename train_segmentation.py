@@ -3,9 +3,7 @@ import numpy as np
 import time
 import os
 
-from tensorflow_core.python.keras.callbacks import TensorBoard
-
-from craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
+from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"

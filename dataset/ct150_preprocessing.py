@@ -1,12 +1,11 @@
 import tensorflow as tf
 import numpy as np
-import scipy
 import pydicom
 import glob
 import os
 import re
 import nibabel
-import resize_3d
+from tools import resize_3d
 
 PATIENTS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/data/"
 LABELS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/labels/"
@@ -206,6 +205,7 @@ class CT150:
                     scaled_src_data, scaled_label_data = self.preprocess_data(src_data, label_data)
 
                     if self.sanity_check_after_preprocessing(scaled_src_data, scaled_label_data):
+                        # pass
                         if self.save_tfrecords(patient_id, src_data, label_data, scaled_src_data, scaled_label_data):
                             pass
                         else:

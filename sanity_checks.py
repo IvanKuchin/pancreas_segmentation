@@ -2,8 +2,7 @@ import tensorflow as tf
 import numpy as np
 import glob
 import os
-from craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
-
+from dataset.craft_datasets import craft_datasets
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 
