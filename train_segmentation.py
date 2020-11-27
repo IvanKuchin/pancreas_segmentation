@@ -112,6 +112,13 @@ def get_tensorboard_log_dir():
     return os.path.join(root_log_dir, run_id)
 
 
+def __custom_loss(y_true, y_pred):
+    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+
+    loss = scce(y_true, y_pred, sample_weight = y_true*5000+1)
+    return loss
+
+
 def main():
     ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
     # run_through_data_wo_any_action(ds_train, ds_valid)
@@ -122,7 +129,7 @@ def main():
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
 
-    model.compile(optimizer = "adam", loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
+    model.compile(optimizer = "adam", loss = __custom_loss,
                   metrics = ['accuracy', 'sparse_categorical_crossentropy'])
 
     history = model.fit(ds_train, epochs = 20, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])

@@ -40,6 +40,8 @@ class test_label_affine(unittest.TestCase):
             affine = self.get_affine_from_nifti_file(file_name)
             analysis_result = self.analyze_translation(affine)
             self.assertEqual(True, analysis_result, msg = "translation is non-zero in file {}".format(file_name))
+            # print(affine)
+            # break
 
     def test_is_rotation_is_0(self):
         for file_name in glob.glob(os.path.join(nifti_folder, "label*.nii")):
