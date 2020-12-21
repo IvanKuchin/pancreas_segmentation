@@ -2,84 +2,12 @@ import tensorflow as tf
 import numpy as np
 import time
 import os
+from tools.craft_network import craft_network
 
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
-
+from tools.craft_network import craft_network
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
-
-
-def generator_downsample(filters, size, apply_batchnorm=True):
-    model = tf.keras.models.Sequential()
-    model.add(
-        tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same")
-    )
-    if (apply_batchnorm):
-        model.add(
-            tf.keras.layers.BatchNormalization()
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
-    return model
-
-
-def generator_upsample(filters, size, apply_dropout=False):
-    model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same")
-    )
-    model.add(
-        tf.keras.layers.BatchNormalization()
-    )
-    if (apply_dropout):
-        model.add(
-            tf.keras.layers.Dropout(0.5)
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
-    return model
-
-
-def craft_network():
-    downsample_steps = [
-        generator_downsample(16, 3),  # (?, 128, 128, 16)
-        generator_downsample(32, 3),  # (?,  64,  64, 32)
-        generator_downsample(64, 3),  # (?,  32,  32, 64)
-        generator_downsample(128, 3),  # (?,  16,  16, 128)
-        generator_downsample(256, 3),  # (?,   8,   8, 256)
-        generator_downsample(512, 3),  # (?,   4,   4, 512)
-        #     generator_downsample(512, 3), # (?, 2, 2, 512)
-        #         generator_downsample(512, 3), # (?, 1, 1, 512)
-    ]
-
-    upsample_steps = [
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 2, 2, 512)
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 4, 4, 512)
-        generator_upsample(256, 3),  # (?,   8,   8, 256)
-        generator_upsample(128, 3),  # (?,  16,  16, 128)
-        generator_upsample(64, 3),  # (?,  32,  32,  64)
-        generator_upsample(32, 3),  # (?,  64,  64,  32)
-        generator_upsample(16, 3),  # (?, 128, 128,  16)
-    ]
-
-    inputs = tf.keras.layers.Input(shape = [256, 256, 256, 1])
-
-    x = inputs
-    generator_steps_otput = []
-    for step in downsample_steps:
-        x = step(x)
-        generator_steps_otput.append(x)
-
-    skip_conns = reversed(generator_steps_otput[:-1])
-    for step, skip_conn in zip(upsample_steps, skip_conns):
-        x = step(x)
-        x = tf.keras.layers.Concatenate(name = "add_" + step.name)([x, skip_conn])
-
-    output_layer = tf.keras.layers.Conv3DTranspose(2, kernel_size = 3, strides = 2, padding = "same")(x)
-
-    return tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
 
 def run_through_data_wo_any_action(ds_train, ds_valid):
@@ -124,7 +52,9 @@ def main():
     # run_through_data_wo_any_action(ds_train, ds_valid)
 
     model = craft_network()
-    # predict_on_random_data()
+    predict_on_random_data(model)
+
+    return
 
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
@@ -132,7 +62,7 @@ def main():
     model.compile(optimizer = "adam", loss = __custom_loss,
                   metrics = ['accuracy', 'sparse_categorical_crossentropy'])
 
-    history = model.fit(ds_train, epochs = 20, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])
+    history = model.fit(ds_train, epochs = 100, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])
 
     model.save("pancreas_segmentation_model.h5")
 

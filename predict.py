@@ -5,7 +5,7 @@ import pydicom
 from tools import resize_3d
 import numpy as np
 import nibabel as nib
-
+from tools.craft_network import craft_network
 
 
 class Predict:
@@ -42,9 +42,9 @@ class Predict:
     def __get_patient_position_from_first_frame(self, dcm_slices):
         min_number = dcm_slices[0][0x0020, 0x0013].value
         min_idx = 0
-        for idx, slice in enumerate(dcm_slices):
-            if slice[0x0020, 0x0013].value < min_number:
-                min_number = slice[0x0020, 0x0013].value
+        for idx, _slice in enumerate(dcm_slices):
+            if _slice[0x0020, 0x0013].value < min_number:
+                min_number = _slice[0x0020, 0x0013].value
                 min_idx = idx
 
         return dcm_slices[min_idx][0x0020, 0x0032].value
@@ -65,13 +65,25 @@ class Predict:
         dcm_patient_position = self.__get_patient_position_from_first_frame(dcm_slices)
 
         affine = np.zeros([4, 4])
-        affine[0,0] = -dcm_patient_orientation[0] * dcm_pixel_spacing[0]
-        affine[1,0] = -dcm_patient_orientation[1] * dcm_pixel_spacing[0]
-        affine[2,0] = -dcm_patient_orientation[2] * dcm_pixel_spacing[0]
+        affine[0,0] = dcm_patient_orientation[0] * dcm_pixel_spacing[0]
+        affine[1,0] = dcm_patient_orientation[1] * dcm_pixel_spacing[0]
+        affine[2,0] = dcm_patient_orientation[2] * dcm_pixel_spacing[0]
 
-        affine[0,1] = -dcm_patient_orientation[3] * dcm_pixel_spacing[1]
-        affine[1,1] = -dcm_patient_orientation[4] * dcm_pixel_spacing[1]
-        affine[2,1] = -dcm_patient_orientation[5] * dcm_pixel_spacing[1]
+        affine[0,1] = dcm_patient_orientation[3] * dcm_pixel_spacing[1]
+        affine[1,1] = dcm_patient_orientation[4] * dcm_pixel_spacing[1]
+        affine[2,1] = dcm_patient_orientation[5] * dcm_pixel_spacing[1]
+
+        # --- inverse axes X and Y. This was found experimental way
+        # --- could be wrong ... 
+        affine[0,0] = -affine[0,0]
+        affine[1,0] = -affine[1,0]
+        affine[2,0] = -affine[2,0]
+
+        affine[0,1] = -affine[0,1]
+        affine[1,1] = -affine[1,1]
+        affine[2,1] = -affine[2,1]
+
+
 
         affine[2,2] = dcm_slice_thickness
 
@@ -106,7 +118,10 @@ class Predict:
         dcm_slices = self.__read_dcm_slices(dcm_folder)
         raw_pixel_data = self.__get_pixel_data(dcm_slices)
         src_data = self.__preprocess_data(raw_pixel_data)
-        model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
+
+        model = craft_network("pancreas_segmentation_checkpoint_292_epochs.hdf5")
+        # model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
+
         prediction = model(src_data)
         mask = self.__create_mask(prediction)
         mask = self.__resize_mask_to_dcm_shape(mask, dcm_slices)

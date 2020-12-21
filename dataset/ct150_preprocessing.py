@@ -144,7 +144,7 @@ class CT150:
 
         data_processed = (data_zoomed - np.min(data_zoomed)) / (np.max(data_zoomed) - np.min(data_zoomed))
         if data_processed.shape != AUGMENT_SCALED_DIMS:
-            print_error("wrong Z-axis dimensionality {} must be {}".format(data_processed.shape, AUGMENT_SCALED_DIMS));
+            print_error("wrong Z-axis dimensionality {} must be {}".format(data_processed.shape, AUGMENT_SCALED_DIMS))
 
         return data_processed, label_zoomed
 

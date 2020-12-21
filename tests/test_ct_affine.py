@@ -10,12 +10,12 @@ patients_folder = "c:\\docs\\src\\kt\\datasets\\den\\data_by_series\\"
 
 class test_label_affine(unittest.TestCase):
     def get_patient_orientations(self, file_name):
-        slice = pydicom.dcmread(file_name)
-        return slice[0x20, 0x37].value
+        _slice = pydicom.dcmread(file_name)
+        return _slice[0x20, 0x37].value
 
     def get_patient_position(self, file_name):
-        slice = pydicom.dcmread(file_name)
-        return slice[0x20, 0x32].value
+        _slice = pydicom.dcmread(file_name)
+        return _slice[0x20, 0x32].value
 
 
     def analyze(self, file_name, affine):
@@ -26,19 +26,19 @@ class test_label_affine(unittest.TestCase):
         #     print("-----", file_name, "\n", affine)
 
     def analyze_translation(self, affine):
-        ''' analyze if PCS (patient coordinate system) located out of (0, 0, 0) '''
+        """ analyze if PCS (patient coordinate system) located out of (0, 0, 0) """
         result = True
-        sum = affine[0] + affine[1] + affine[2]
-        if sum == 0:
+        _sum = affine[0] + affine[1] + affine[2]
+        if _sum == 0:
             result = False
 
         return result
 
     def analyze_rotation(self, affine):
-        ''' analyze if patient oriented along two perpendicular axis '''
+        """ analyze if patient oriented along two perpendicular axis """
         result = True
-        sum = np.sum(np.abs(np.asarray(affine)))
-        if sum != 2:
+        _sum = np.sum(np.abs(np.asarray(affine)))
+        if _sum != 2:
             result = False
 
         return result

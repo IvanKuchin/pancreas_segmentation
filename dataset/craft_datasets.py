@@ -1,11 +1,12 @@
 import tensorflow as tf
 import numpy as np
+import os
 
 INPUT_DIMS = tf.constant([256, 256, 256])
 
 def tfrecord_fname_to_patientid(fname_src):
     # print(fname_src)
-    fname = tf.strings.split(fname_src, sep = "\\")[-1]
+    fname = tf.strings.split(fname_src, sep = os.path.sep)[-1]
     patient_id = tf.strings.split(fname, sep = ".")[0]
     return patient_id
 
@@ -22,7 +23,7 @@ def read_data_and_label(patient_id, src_folder):
 
     :type src_folder: basestring
     """
-    # print(patient_id)
+    print("src_folder:", src_folder, "patient_id:", patient_id)
     data_fname = src_folder + patient_id + "_data.npy"
     label_fname = src_folder + patient_id + "_label.npy"
     data_array, label_array = tf.py_function(py_read_data_and_label, [data_fname, label_fname],

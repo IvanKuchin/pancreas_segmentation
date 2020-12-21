@@ -21,16 +21,16 @@ class test_label_affine(unittest.TestCase):
 
     def analyze_translation(self, affine):
         result = True
-        sum = affine[3, 0] + affine[0, 3] + affine[3, 1] + affine[1, 3] + affine[3, 2] + affine[2, 3] + affine[3, 3]
-        if sum != 1:
+        _sum = affine[3, 0] + affine[0, 3] + affine[3, 1] + affine[1, 3] + affine[3, 2] + affine[2, 3] + affine[3, 3]
+        if _sum != 1:
             result = False
 
         return result
 
     def analyze_rotation(self, affine):
         result = True
-        sum = affine[1, 0] + affine[0, 1] + affine[2, 0] + affine[0, 2] + affine[2, 1] + affine[1, 2]
-        if sum != 0:
+        _sum = affine[1, 0] + affine[0, 1] + affine[2, 0] + affine[0, 2] + affine[2, 1] + affine[1, 2]
+        if _sum != 0:
             result = False
 
         return result
