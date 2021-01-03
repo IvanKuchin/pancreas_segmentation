@@ -112,15 +112,17 @@ class Predict:
         if len(title):
             print(title)
         print("shape", data.shape)
-        print("min/mean/max {}/{:.2f}/{}".format(tf.reduce_min(data), tf.reduce_mean(tf.cast(data, dtype=tf.float32)), tf.reduce_max(data)))
+        print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data), tf.reduce_mean(tf.cast(data, dtype=tf.float32)), tf.reduce_max(data), tf.reduce_sum(data)))
 
     def main(self, dcm_folder):
         dcm_slices = self.__read_dcm_slices(dcm_folder)
         raw_pixel_data = self.__get_pixel_data(dcm_slices)
         src_data = self.__preprocess_data(raw_pixel_data)
 
-        model = craft_network("pancreas_segmentation_checkpoint_292_epochs.hdf5")
+        model = craft_network("weights.hdf5")
         # model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
+
+        # model.summary()
 
         prediction = model(src_data)
         mask = self.__create_mask(prediction)
@@ -130,7 +132,7 @@ class Predict:
 
         self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype=np.uint8), affine_matrix)
 
-        self.__print_stat(src_data, "src data")
+        self.__print_stat(src_data, "src CT data")
         self.__print_stat(mask, "mask")
         print(affine_matrix)
 

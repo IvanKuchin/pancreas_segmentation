@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 from dataset.craft_datasets import craft_datasets
 from tools.craft_network import craft_network
+from tools.categorical_metrics import CategoricalMetric, CategoricalF1
+import tools.config as CONFIG
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 
@@ -20,9 +22,14 @@ def __create_mask(data):
 
 
 def __custom_loss(y_true, y_pred):
+    y_true = tf.cast(y_true, dtype=tf.float32)
+    y_pred = tf.cast(y_pred, dtype=tf.float32)
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
-
-    loss = scce(y_true, y_pred, sample_weight = y_true*5000+1)
+    loss = scce(
+        y_true,
+        y_pred,
+        sample_weight = y_true * CONFIG.WEIGHT_SCALE + CONFIG.WEIGHT_BIAS
+        )
     return loss
 
 
@@ -33,13 +40,27 @@ def main():
     label_orig = label_orig[0:1, ...]
 
     # model = tf.keras.models.load_model("../pancreas_segmentation_model.h5", compile=False)
-    model = craft_network()
+    model = craft_network("../weights.hdf5")
     # latest = tf.train.latest_checkpoint("./", "pancreas_segmentation_checkpoint.h5")
     # print(latest)
-    model.load_weights("/Users/ikuchin/PycharmProjects/ct_prediction/pancreas_segmentation_checkpoint.h5")
+    # model.load_weights("/Users/ikuchin/PycharmProjects/ct_prediction/pancreas_segmentation_checkpoint.h5")
     model.compile(optimizer = "adam", loss = __custom_loss,
-                  metrics = ['accuracy', 'sparse_categorical_crossentropy'])
-    model.evaluate(data_orig, label_orig)
+                  metrics = [
+                      'accuracy',
+                      CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
+                      CategoricalMetric(tf.keras.metrics.FalsePositives(), name = 'custom_fp'),
+                      CategoricalMetric(tf.keras.metrics.TrueNegatives(), name = 'custom_tn'),
+                      CategoricalMetric(tf.keras.metrics.FalseNegatives(), name = 'custom_fn'),
+                      CategoricalMetric(tf.keras.metrics.Accuracy(), name = 'custom_accuracy'),
+                      CategoricalMetric(tf.keras.metrics.Precision(), name = 'custom_precision'),
+                      CategoricalMetric(tf.keras.metrics.Recall(), name = 'custom_recall'),
+                      CategoricalF1(name = 'custom_f1'),
+                  ])
+
+    model.evaluate_generator(ds_train, use_multiprocessing = True, verbose=1)
+
+    for data, label in ds_valid:
+        model.evaluate(data, label)
 
     # label_pred = model.predict(data_orig)
     # mask = __create_mask(label_pred)

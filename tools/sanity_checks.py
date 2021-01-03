@@ -8,14 +8,21 @@ TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 
 
 def get_min_mean_max(ds):
-    for data, labels in ds:
-        print("data, labels: {}/{:.2f}/{}, {}/{:.4f}/{}".format(
+    print("data, labels: min/mean/max, min/mean/max --- sum/shape/percentage")
+    for idx, (data, labels) in enumerate(ds):
+        number_of_items = data.shape[0] * data.shape[1] * data.shape[2] * data.shape[3]
+
+        print("{}) data, labels: {}/{:.2f}/{}, {}/{:.4f}/{} --- {}/{}/{:5.2f}%".format(
+            idx,
             tf.reduce_min(data).numpy(),
             tf.reduce_mean(data).numpy(),
             tf.reduce_max(data).numpy(),
             tf.reduce_min(labels).numpy(),
             tf.reduce_mean(tf.cast(labels, dtype=tf.float32)).numpy(),
             tf.reduce_max(labels).numpy(),
+            tf.reduce_sum(labels).numpy(),
+            number_of_items,
+            tf.reduce_sum(labels).numpy() / number_of_items * 100
         ))
 
         if(data.shape != labels.shape):

@@ -4,7 +4,7 @@ import os
 def generator_downsample(filters, size, apply_batchnorm=True):
     model = tf.keras.models.Sequential()
     model.add(
-        tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same")
+        tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
     )
     if (apply_batchnorm):
         model.add(
@@ -74,7 +74,10 @@ def craft_network(checkpoint_file = None):
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
     if checkpoint_file and os.path.exists(checkpoint_file):
+        print("Loading weights from checkpoint ", checkpoint_file)
         model.load_weights(checkpoint_file)
+    else:
+        print("Checkpoint file not found")
 
     return model
 

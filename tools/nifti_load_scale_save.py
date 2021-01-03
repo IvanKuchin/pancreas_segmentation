@@ -14,7 +14,8 @@ def print_nifti_stat(nifti_img):
 
 def main2():
     patient_id = "0017"
-    img = nib.load("c:\\docs\\src\\kt\\datasets\\ct-150\\labels\\label{}.nii".format(patient_id))
+    # img = nib.load("c:\\docs\\src\\kt\\datasets\\ct-150\\labels\\label{}.nii".format(patient_id))
+    img = nib.load("../ground_truth.nii")
     print("original:")
     print_nifti_stat(img)
 

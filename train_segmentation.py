@@ -6,6 +6,8 @@ from tools.craft_network import craft_network
 
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 from tools.craft_network import craft_network
+from tools.categorical_metrics import CategoricalMetric, CategoricalF1
+
 
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 
@@ -29,7 +31,7 @@ def run_through_data_wo_any_action(ds_train, ds_valid):
 def predict_on_random_data(model):
     for i in range(1, 32):
         t0 = time.time()
-        pred = model.predict(tf.random.normal([i, 256, 256, 256, 1]))
+        pred = model.predict(tf.random.normal([1, 256, 256, 256, 1]))
         t1 = time.time()
         print("prediction shape/time:", pred.shape, "/", np.round(t1 - t0))
 
@@ -51,20 +53,28 @@ def main():
     ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
     # run_through_data_wo_any_action(ds_train, ds_valid)
 
-    model = craft_network()
-    predict_on_random_data(model)
-
-    return
+    model = craft_network("weights.hdf5")
+    # predict_on_random_data(model)
 
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
 
     model.compile(optimizer = "adam", loss = __custom_loss,
-                  metrics = ['accuracy', 'sparse_categorical_crossentropy'])
+                  metrics = [
+                      'accuracy',
+                      CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
+                      CategoricalMetric(tf.keras.metrics.FalsePositives(), name = 'custom_fp'),
+                      CategoricalMetric(tf.keras.metrics.TrueNegatives(), name = 'custom_tn'),
+                      CategoricalMetric(tf.keras.metrics.FalseNegatives(), name = 'custom_fn'),
+                      CategoricalMetric(tf.keras.metrics.Accuracy(), name = 'custom_accuracy'),
+                      CategoricalMetric(tf.keras.metrics.Precision(), name = 'custom_precision'),
+                      CategoricalMetric(tf.keras.metrics.Recall(), name = 'custom_recall'),
+                      CategoricalF1(name = 'custom_f1'),
+                  ])
 
-    history = model.fit(ds_train, epochs = 100, validation_data = (ds_valid), callbacks = [checkpoint_cb, tensorboard_cb])
+    history = model.fit(ds_train, epochs = 1, validation_data = ds_valid, callbacks = [checkpoint_cb, tensorboard_cb])
 
-    model.save("pancreas_segmentation_model.h5")
+    # model.save("pancreas_segmentation_model.h5")
 
 
 def main1():
