@@ -1,7 +1,6 @@
 import tensorflow as tf
-import numpy as np
 from dataset.craft_datasets import craft_datasets
-from tools.craft_network import craft_network
+from tools.craft_network.unet_shortcuts_every_layer import craft_network
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 import tools.config as CONFIG
 

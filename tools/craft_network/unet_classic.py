@@ -1,6 +1,11 @@
 import tensorflow as tf
 import os
 
+from tools.predict_on_random_data import predict_on_random_data
+
+import tools.config as config
+
+
 def generator_downsample(filters, size, apply_batchnorm=True):
     model = tf.keras.models.Sequential()
     model.add(
@@ -13,13 +18,14 @@ def generator_downsample(filters, size, apply_batchnorm=True):
     model.add(
         tf.keras.layers.ReLU()
     )
+
     return model
 
 
 def generator_upsample(filters, size, apply_dropout=False):
     model = tf.keras.Sequential()
     model.add(
-        tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same")
+        tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
     )
     model.add(
         tf.keras.layers.BatchNormalization()
@@ -56,7 +62,7 @@ def craft_network(checkpoint_file = None):
         generator_upsample(16, 3),  # (?, 128, 128,  16)
     ]
 
-    inputs = tf.keras.layers.Input(shape = [256, 256, 256, 1])
+    inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
 
     x = inputs
     generator_steps_otput = []
@@ -67,7 +73,7 @@ def craft_network(checkpoint_file = None):
     skip_conns = reversed(generator_steps_otput[:-1])
     for step, skip_conn in zip(upsample_steps, skip_conns):
         x = step(x)
-        x = tf.keras.layers.Concatenate(name = "add_" + step.name)([x, skip_conn])
+        x = tf.keras.layers.Concatenate(name = "concat_" + step.name)([x, skip_conn])
 
     output_layer = tf.keras.layers.Conv3DTranspose(2, kernel_size = 3, strides = 2, padding = "same")(x)
 
@@ -81,3 +87,13 @@ def craft_network(checkpoint_file = None):
 
     return model
 
+
+def main():
+    model = craft_network("")
+
+    model.summary()
+    predict_on_random_data(model)
+
+
+if __name__ == "__main__":
+    main()

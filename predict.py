@@ -5,7 +5,7 @@ import pydicom
 from tools import resize_3d
 import numpy as np
 import nibabel as nib
-from tools.craft_network import craft_network
+from tools.craft_network.unet_shortcuts_every_layer import craft_network
 
 
 class Predict:
