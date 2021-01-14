@@ -1,6 +1,7 @@
 import time
 import tensorflow as tf
 import tools.config as config
+import numpy as np
 
 
 def predict_on_random_data(model):
