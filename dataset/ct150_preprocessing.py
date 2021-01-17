@@ -6,11 +6,11 @@ import os
 import re
 import nibabel
 from tools import resize_3d
+import tools.config as config
 
 PATIENTS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/data/"
 LABELS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/labels/"
-TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
-INPUT_DIMS = np.array([256, 256, 256])
+INPUT_DIMS = np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
 AUGMENT_SCALE_FACTOR = 0.1
 AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
                               dtype = tf.int32).numpy()
@@ -23,10 +23,10 @@ def print_debug(text_to_print):
 
 
 class CT150:
-    def __init__(self, patients_src_folder, labels_src_folder, tfrecord_folder):
+    def __init__(self, patients_src_folder, labels_src_folder, TFRECORD_FOLDER):
         self.patients_src_folder = patients_src_folder
         self.labels_src_folder = labels_src_folder
-        self.tfrecord_folder = tfrecord_folder
+        self.TFRECORD_FOLDER = TFRECORD_FOLDER
 
     def GetPatientIDFromFolder(self, folder):
         result = None
@@ -91,10 +91,10 @@ class CT150:
 
         # print("\tshape:", original_data.shape, "->", scaled_data.shape)
 
-        if not os.path.isdir(self.tfrecord_folder):
-            os.mkdir(self.tfrecord_folder)
+        if not os.path.isdir(self.TFRECORD_FOLDER):
+            os.mkdir(self.TFRECORD_FOLDER)
 
-        with tf.io.TFRecordWriter(os.path.join(self.tfrecord_folder, patient_id + ".tfrecord")) as f:
+        with tf.io.TFRecordWriter(os.path.join(self.TFRECORD_FOLDER, patient_id + ".tfrecord")) as f:
             feature = {
                 "original_shape": tf.train.Feature(int64_list = tf.train.Int64List(value = original_data.shape)),
                 "scaled_shape": tf.train.Feature(int64_list = tf.train.Int64List(value = scaled_data.shape)),
@@ -106,8 +106,8 @@ class CT150:
             f.write(example_proto.SerializeToString())
             # f.write(tf.io.serialize_tensor(scaled_data))
 
-        np.save(TFRECORD_FOLDER + patient_id + "_data.npy", scaled_data)
-        np.save(TFRECORD_FOLDER + patient_id + "_label.npy", scaled_label)
+        np.save(config.TFRECORD_FOLDER + patient_id + "_data.npy", scaled_data)
+        np.save(config.TFRECORD_FOLDER + patient_id + "_label.npy", scaled_label)
 
         return result
 
@@ -220,16 +220,16 @@ class CT150:
 
 
 def main():
-    ct150 = CT150(PATIENTS_SRC_FOLDER, LABELS_SRC_FOLDER, TFRECORD_FOLDER)
+    ct150 = CT150(PATIENTS_SRC_FOLDER, LABELS_SRC_FOLDER, config.TFRECORD_FOLDER)
     ct150.read_src_data_and_labels_save_as_tfrecords()
 
 def main2():
     arr = np.random.randint(10, size=(500,50,500))
     print(arr.shape)
-    np.save(TFRECORD_FOLDER+"/1.npy", arr)
+    np.save(config.TFRECORD_FOLDER+"/1.npy", arr)
 
 def main3():
-    arr2 = np.load(TFRECORD_FOLDER+"/0001_data.npy")
+    arr2 = np.load(config.TFRECORD_FOLDER+"/0001_data.npy")
     print(arr2.shape)
 
 def main4():

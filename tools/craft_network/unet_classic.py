@@ -6,76 +6,59 @@ from tools.predict_on_random_data import predict_on_random_data
 import tools.config as config
 
 
-def generator_downsample(filters, size, apply_batchnorm=True):
+def double_conv(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropout=False):
     model = tf.keras.models.Sequential()
-    model.add(
-        tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
-    )
+
+    model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
     if (apply_batchnorm):
-        model.add(
-            tf.keras.layers.BatchNormalization()
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
-
-    return model
-
-
-def generator_upsample(filters, size, apply_dropout=False):
-    model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
-    )
-    model.add(
-        tf.keras.layers.BatchNormalization()
-    )
+        model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.ReLU())
     if (apply_dropout):
-        model.add(
-            tf.keras.layers.Dropout(0.5)
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
+        model.add(tf.keras.layers.Dropout(0.5))
+
+    model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
+    if (apply_batchnorm):
+        model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.ReLU())
+    if (apply_dropout):
+        model.add(tf.keras.layers.Dropout(0.5))
+
     return model
 
 
 def craft_network(checkpoint_file = None):
     downsample_steps = [
-        generator_downsample(16, 3),  # (?, 128, 128, 16)
-        generator_downsample(32, 3),  # (?,  64,  64, 32)
-        generator_downsample(64, 3),  # (?,  32,  32, 64)
-        generator_downsample(128, 3),  # (?,  16,  16, 128)
-        generator_downsample(256, 3),  # (?,   8,   8, 256)
-        generator_downsample(512, 3),  # (?,   4,   4, 512)
-        #     generator_downsample(512, 3), # (?, 2, 2, 512)
-        #         generator_downsample(512, 3), # (?, 1, 1, 512)
+        double_conv(32, 3),  # (?, 128, 128, 64)
+        double_conv(64, 3),  # (?,  64,  64, 128)
+        double_conv(128, 3),  # (?,  32,  32, 256)
+        double_conv(256, 3),  # (?,  16,  16, 512)
     ]
 
     upsample_steps = [
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 2, 2, 512)
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 4, 4, 512)
-        generator_upsample(256, 3),  # (?,   8,   8, 256)
-        generator_upsample(128, 3),  # (?,  16,  16, 128)
-        generator_upsample(64, 3),  # (?,  32,  32,  64)
-        generator_upsample(32, 3),  # (?,  64,  64,  32)
-        generator_upsample(16, 3),  # (?, 128, 128,  16)
+        double_conv(128, 3),  # (?,  32,  32, 256)
+        double_conv(64, 3),  # (?,  64,  64, 128)
+        double_conv(32, 3),  # (?, 128, 128, 64)
     ]
+
+    filters = [32, 64, 128, 256]
 
     inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
 
     x = inputs
-    generator_steps_otput = []
-    for step in downsample_steps:
-        x = step(x)
-        generator_steps_otput.append(x)
+    generator_steps_output = []
+    for idx, _filter in enumerate(filters):
+        x = double_conv(_filter)(x)
+        generator_steps_output.append(x)
+        if idx < len(filters) - 1:
+            x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 2), padding = "same")(x)
 
-    skip_conns = reversed(generator_steps_otput[:-1])
-    for step, skip_conn in zip(upsample_steps, skip_conns):
-        x = step(x)
-        x = tf.keras.layers.Concatenate(name = "concat_" + step.name)([x, skip_conn])
+    skip_conns = reversed(generator_steps_output[:-1])
+    for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
+        x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform')(x)
+        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, skip_conn])
+        x = double_conv(_filter)(x)
 
-    output_layer = tf.keras.layers.Conv3DTranspose(2, kernel_size = 3, strides = 2, padding = "same")(x)
+    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
 
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
@@ -91,7 +74,7 @@ def craft_network(checkpoint_file = None):
 def main():
     model = craft_network("")
 
-    model.summary()
+    model.summary(line_length = 128)
     predict_on_random_data(model)
 
 

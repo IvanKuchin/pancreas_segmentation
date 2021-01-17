@@ -2,10 +2,7 @@ import tensorflow as tf
 from dataset.craft_datasets import craft_datasets
 from tools.craft_network.unet_shortcuts_every_layer import craft_network
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1
-import tools.config as CONFIG
-
-TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
-
+import tools.config as config
 
 def __print_stat(data, title=""):
     print('-' * 100)
@@ -27,13 +24,13 @@ def __custom_loss(y_true, y_pred):
     loss = scce(
         y_true,
         y_pred,
-        sample_weight = y_true * CONFIG.WEIGHT_SCALE + CONFIG.WEIGHT_BIAS
+        sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
         )
     return loss
 
 
 def main():
-    ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
+    ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER)
     data_orig, label_orig = next(iter(ds_valid))
     data_orig = data_orig[0:1, ...]
     label_orig = label_orig[0:1, ...]

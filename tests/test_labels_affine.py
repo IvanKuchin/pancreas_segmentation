@@ -3,7 +3,7 @@ import nibabel as nib
 import glob
 import os
 
-nifti_folder = "c:\\docs\\src\\kt\\datasets\\ct-150\\labels\\"
+nifti_folder = "/docs/src/kt/datasets/ct-150/labels/"
 
 
 class test_label_affine(unittest.TestCase):

@@ -1,7 +1,9 @@
 import tensorflow as tf
 import os
 
-def generator_downsample(filters, size, apply_batchnorm=True):
+import tools.config as config
+
+def generator_downsample(filters, size, apply_batchnorm=False):
     model = tf.keras.models.Sequential()
     model.add(
         tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
@@ -17,21 +19,18 @@ def generator_downsample(filters, size, apply_batchnorm=True):
     return model
 
 
-def generator_upsample(filters, size, apply_dropout=False):
+def generator_upsample(filters, size, apply_batchnorm=False, apply_dropout=False):
     model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
-    )
-    model.add(
-        tf.keras.layers.BatchNormalization()
-    )
-    if (apply_dropout):
-        model.add(
-            tf.keras.layers.Dropout(0.5)
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
+    model.add(tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform'))
+
+    if apply_batchnorm:
+        model.add(tf.keras.layers.BatchNormalization())
+
+    model.add(tf.keras.layers.ReLU())
+
+    if apply_dropout:
+        model.add(tf.keras.layers.Dropout(0.5))
+
     return model
 
 
@@ -57,7 +56,7 @@ def craft_network(checkpoint_file = None):
         generator_upsample(16, 3),  # (?, 128, 128,  16)
     ]
 
-    inputs = tf.keras.layers.Input(shape = [256, 256, 256, 1])
+    inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
 
     x = inputs
     generator_steps_otput = []

@@ -4,7 +4,7 @@ import glob
 import os
 from dataset.craft_datasets import craft_datasets
 
-TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
+config.TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
 
 
 def get_min_mean_max(ds):
@@ -29,7 +29,7 @@ def get_min_mean_max(ds):
             print_error("shapea are not equal {} and {}".format(data.shape, labels.shape))
 
 def main():
-    train_ds, valid_ds = craft_datasets(TFRECORD_FOLDER)
+    train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER)
     print("--- Train set")
     get_min_mean_max(train_ds)
     print("--- Valid set")
@@ -40,7 +40,7 @@ def print_file_stat(file_name):
     print("{}: {}/{}/{}".format(file_name, np.min(arr), np.mean(arr), np.max(arr)))
 
 def main2():
-    for file_name in glob.glob(os.path.join(TFRECORD_FOLDER, "*_data.npy")):
+    for file_name in glob.glob(os.path.join(config.TFRECORD_FOLDER, "*_data.npy")):
         print_file_stat(file_name)
 
 if __name__ == "__main__":

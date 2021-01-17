@@ -9,9 +9,6 @@ from tools.craft_network.unet_classic import craft_network
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 import tools.config as config
 
-TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/"
-
-
 def run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
     for idx, (data, label) in enumerate(ds_train):
@@ -41,7 +38,7 @@ def __custom_loss(y_true, y_pred):
 
 
 def main():
-    ds_train, ds_valid = craft_datasets(TFRECORD_FOLDER)
+    ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER)
     # run_through_data_wo_any_action(ds_train, ds_valid)
 
     model = craft_network("weights.hdf5")
