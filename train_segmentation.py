@@ -4,10 +4,9 @@ import time
 import os
 
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
-# from tools.craft_network.unet_shortcuts_every_layer import craft_network
-from tools.craft_network.unet_classic import craft_network
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 import tools.config as config
+import tools.craft_network as craft_network
 
 def run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
