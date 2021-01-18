@@ -23,9 +23,9 @@ def __custom_loss(y_true, y_pred):
     y_pred = tf.cast(y_pred, dtype=tf.float32)
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
-        y_true,
+        tf.maximum(y_true, 0.0),
         y_pred,
-        sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
+        sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
         )
     return loss
 
@@ -37,7 +37,7 @@ def main():
     label_orig = label_orig[0:1, ...]
 
     # model = tf.keras.models.load_model("../pancreas_segmentation_model.h5", compile=False)
-    model = craft_network("../weights.hdf5")
+    model = craft_network("../"+config.MODEL_CHECKPOINT)
     # latest = tf.train.latest_checkpoint("./", "pancreas_segmentation_checkpoint.h5")
     # print(latest)
     # model.load_weights("/Users/ikuchin/PycharmProjects/ct_prediction/pancreas_segmentation_checkpoint.h5")

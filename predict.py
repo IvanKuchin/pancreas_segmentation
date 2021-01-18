@@ -6,6 +6,7 @@ from tools import resize_3d
 import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
+import tools.config as config
 
 
 class Predict:
@@ -27,10 +28,22 @@ class Predict:
         return result
 
     def __preprocess_data(self, data):
-        data = resize_3d.resize_3d_image(data, tf.constant([256, 256, 256]))
+        data = resize_3d.resize_3d_image(data, tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
         data = tf.cast(data, tf.float32)
-        data = (data - tf.reduce_min(data)) / (tf.reduce_max(data) - tf.reduce_min(data))
+
+        #
+        # keep CT HU in range [-100, 200]
+        #
+        data = tf.minimum(data, 200)
+        data = tf.maximum(data, -100)
+
+        #
+        # scale CT to range [-1, 1]
+        #
+        data = (data - tf.reduce_min(data)) / (tf.reduce_max(data) - tf.reduce_min(data)) * 2 - 1
+
         data = data[tf.newaxis, ..., tf.newaxis]
+
         return data
 
     def __create_mask(self, data):
@@ -119,7 +132,7 @@ class Predict:
         raw_pixel_data = self.__get_pixel_data(dcm_slices)
         src_data = self.__preprocess_data(raw_pixel_data)
 
-        model = craft_network("weights.hdf5")
+        model = craft_network.craft_network(config.MODEL_CHECKPOINT)
         # model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
 
         # model.summary()
