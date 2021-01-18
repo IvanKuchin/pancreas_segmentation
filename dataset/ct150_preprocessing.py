@@ -15,8 +15,10 @@ AUGMENT_SCALE_FACTOR = 0.1
 AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
                               dtype = tf.int32).numpy()
 
+
 def print_error(text_to_print):
     print("ERROR:", text_to_print)
+
 
 def print_debug(text_to_print):
     print(text_to_print)
@@ -127,10 +129,10 @@ class CT150:
     #
     def print_statistic(self, tensor_old, tensor_new):
         print("\tshape) {}".format(tensor_new.shape))
-        print("\tmin/max {}/{} -> {}/{}".format(np.min(tensor_old), np.max(tensor_old), np.min(tensor_new), np.max(tensor_new)))
+        print("\tmin/max {}/{} -> {}/{}".format(np.min(tensor_old), np.max(tensor_old), np.min(tensor_new),
+                                                np.max(tensor_new)))
         print("\t\thistogram origin: {}".format(np.histogram(tensor_old, bins = 10)))
         print("\t\thistogram zoomed: {}".format(np.histogram(tensor_new, bins = 10)))
-
 
     def preprocess_data(self, data, label):
         # zoom = AUGMENT_SCALED_DIMS / data.shape
@@ -154,23 +156,23 @@ class CT150:
         # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
         # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
 
-        if(np.min(data) != 0):
+        if (np.min(data) != 0):
             result = False
             print("ERROR: (min(data) == {}) != 0".format(np.min(data)))
-        if(np.mean(data) == 0):
+        if (np.mean(data) == 0):
             result = False
             print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
-        if(np.max(data) != 1):
+        if (np.max(data) != 1):
             result = False
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 
-        if(np.min(label) != 0):
+        if (np.min(label) != 0):
             result = False
             print("ERROR: (min(label) == {}) != 0".format(np.min(label)))
-        if(np.mean(label) == 0):
+        if (np.mean(label) == 0):
             result = False
             print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))
-        if(np.max(label) != 1):
+        if (np.max(label) != 1):
             result = False
             print("ERROR: (max(label) == {}) != 1".format(np.max(label)))
 
@@ -212,7 +214,6 @@ class CT150:
                             print("ERROR: can't save TFRecord patient id:", patient_id)
                     else:
                         print("ERROR: data or label failed sanity check")
-
                 else:
                     print("ERROR: data & labels are not consistent")
             else:
@@ -223,19 +224,23 @@ def main():
     ct150 = CT150(PATIENTS_SRC_FOLDER, LABELS_SRC_FOLDER, config.TFRECORD_FOLDER)
     ct150.read_src_data_and_labels_save_as_tfrecords()
 
+
 def main2():
-    arr = np.random.randint(10, size=(500,50,500))
+    arr = np.random.randint(10, size = (500, 50, 500))
     print(arr.shape)
-    np.save(config.TFRECORD_FOLDER+"/1.npy", arr)
+    np.save(config.TFRECORD_FOLDER + "/1.npy", arr)
+
 
 def main3():
-    arr2 = np.load(config.TFRECORD_FOLDER+"/0001_data.npy")
+    arr2 = np.load(config.TFRECORD_FOLDER + "/0001_data.npy")
     print(arr2.shape)
+
 
 def main4():
     r1 = np.arange(-1024, 2048)
     norm1 = (r1 - np.min(r1)) / (np.max(r1) - np.min(r1))
     print("{}/{}".format(np.min(norm1), np.max(norm1)))
+
 
 if __name__ == "__main__":
     main()

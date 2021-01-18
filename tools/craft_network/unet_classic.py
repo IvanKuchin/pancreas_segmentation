@@ -28,16 +28,16 @@ def double_conv(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropou
 
 def craft_network(checkpoint_file = None):
     downsample_steps = [
-        double_conv(32, 3),  # (?, 128, 128, 64)
-        double_conv(64, 3),  # (?,  64,  64, 128)
-        double_conv(128, 3),  # (?,  32,  32, 256)
-        double_conv(256, 3),  # (?,  16,  16, 512)
+        double_conv(32, 3),   # (?, 128, 128, __filters__)
+        double_conv(64, 3),   # (?,  64,  64, __filters__)
+        double_conv(128, 3),  # (?,  32,  32, __filters__)
+        double_conv(256, 3),  # (?,  16,  16, __filters__)
     ]
 
     upsample_steps = [
-        double_conv(128, 3),  # (?,  32,  32, 256)
-        double_conv(64, 3),  # (?,  64,  64, 128)
-        double_conv(32, 3),  # (?, 128, 128, 64)
+        double_conv(128, 3),  # (?,  32,  32, __filters__)
+        double_conv(64, 3),   # (?,  64,  64, __filters__)
+        double_conv(32, 3),   # (?, 128, 128, __filters__)
     ]
 
     filters = [32, 64, 128, 256]
