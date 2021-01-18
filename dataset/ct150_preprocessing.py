@@ -139,12 +139,31 @@ class CT150:
         # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
         # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
 
+        #
+        # Restrict CT voxel values to [-100, 200], this will give wider range to pancreas,
+        # compare to original data [-1000, 2000]
+        #
+        data_idx1 = data <= -100
+        data_idx2 = data >= 200
+
+        data[data_idx1] = -100
+        data[data_idx2] = 200
+
+        #
+        # Assign -1 to mask that matches < -100 and > 200 data voxels
+        #
+        label[data_idx1] = -1
+        label[data_idx2] = -1
+
         data_zoomed = resize_3d.resize_3d_image(data, AUGMENT_SCALED_DIMS)
         label_zoomed = resize_3d.resize_3d_image(label, AUGMENT_SCALED_DIMS)
 
         # self.print_statistic(label, label_zoomed)
 
-        data_processed = (data_zoomed - np.min(data_zoomed)) / (np.max(data_zoomed) - np.min(data_zoomed))
+        #
+        # scale final data to [-1; 1] range, that should help with ReLU activation
+        #
+        data_processed = (data_zoomed - np.min(data_zoomed)) / (np.max(data_zoomed) - np.min(data_zoomed)) * 2 - 1
         if data_processed.shape != AUGMENT_SCALED_DIMS:
             print_error("wrong Z-axis dimensionality {} must be {}".format(data_processed.shape, AUGMENT_SCALED_DIMS))
 
@@ -156,23 +175,27 @@ class CT150:
         # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
         # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
 
-        if (np.min(data) != 0):
+        if np.min(data) != -1: # data scaled to range [-1, 1]
             result = False
-            print("ERROR: (min(data) == {}) != 0".format(np.min(data)))
-        if (np.mean(data) == 0):
+            print("ERROR: (min(data) == {}) != -1".format(np.min(data)))
+        if np.mean(data) == 0:
             result = False
             print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
-        if (np.max(data) != 1):
+        if np.max(data) != 1:
             result = False
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 
-        if (np.min(label) != 0):
+        # labels must be
+        # -1, if HU <-100 or >200
+        #  0 - background
+        #  1 - pancreas
+        if np.min(label) != -1:
             result = False
-            print("ERROR: (min(label) == {}) != 0".format(np.min(label)))
-        if (np.mean(label) == 0):
+            print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
+        if np.mean(label) == 0:
             result = False
             print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))
-        if (np.max(label) != 1):
+        if np.max(label) != 1:
             result = False
             print("ERROR: (max(label) == {}) != 1".format(np.max(label)))
 
