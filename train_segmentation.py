@@ -29,9 +29,9 @@ def get_tensorboard_log_dir():
     return os.path.join(root_log_dir, run_id)
 
 
-def __custom_loss(y_origin, y_pred):
+def __custom_loss(y_true, y_pred):
 
-    y_true = tf.cast(y_origin, dtype = tf.float32)
+    y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
 
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
