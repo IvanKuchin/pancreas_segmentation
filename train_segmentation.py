@@ -5,8 +5,8 @@ import os
 
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1
+from tools.craft_network import craft_network
 import tools.config as config
-import tools.craft_network as craft_network
 
 def run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
@@ -43,6 +43,9 @@ def main():
     model = craft_network("weights.hdf5")
     # predict_on_random_data(model)
 
+    # print(model.summary(line_length = 128))
+    # return
+
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
 
@@ -61,21 +64,6 @@ def main():
 
     history = model.fit(ds_train, epochs = 1, validation_data = ds_valid, callbacks = [checkpoint_cb, tensorboard_cb])
 
-def main1():
-
-    arr1, arr2 = py_read_data_and_label(tf.constant("c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_data.npy"),
-                                        tf.constant("c:\\docs\\src\\kt\\datasets\\ct-150\\tfrecords\\0001_label.npy"))
-    print(arr1.shape)
-    print(arr2.shape)
-
-
-def main2():
-    arr1 = tf.random.uniform([2, 270, 270, 270])
-    random_offset = crop_to_shape(arr1, arr1)
-    print(tf.shape(random_offset[0]))
-
 
 if __name__ == "__main__":
     main()
-    # main1()
-    # main2()

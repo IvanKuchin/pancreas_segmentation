@@ -2,7 +2,8 @@ import tensorflow as tf
 import numpy as np
 import os
 
-INPUT_DIMS = tf.constant([256, 256, 256])
+import tools.config as config
+
 
 def tfrecord_fname_to_patientid(fname_src):
     # print(fname_src)
@@ -33,7 +34,7 @@ def read_data_and_label(patient_id, src_folder):
 
 
 def crop_to_shape(data, label):
-    target_shape = INPUT_DIMS
+    target_shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]
     data_shape = tf.shape(data)
     random_range = data_shape - target_shape
     random_offset = tf.cast(
@@ -66,8 +67,8 @@ def expand_dimension(data, label):
     data = data[..., tf.newaxis]
     label = label[..., tf.newaxis]
 
-    data = tf.reshape(data, [256, 256, 256, 1])
-    label = tf.reshape(label, [256, 256, 256, 1])
+    data = tf.reshape(data, [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
+    label = tf.reshape(label, [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
 
     return data, label
 
