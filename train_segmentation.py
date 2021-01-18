@@ -29,14 +29,17 @@ def get_tensorboard_log_dir():
     return os.path.join(root_log_dir, run_id)
 
 
-def __custom_loss(y_true, y_pred):
-    y_true = tf.cast(y_true, dtype = tf.float32)
+def __custom_loss(y_origin, y_pred):
+
+    y_true = tf.cast(y_origin, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
+
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
-        y_true,
+        tf.maximum(y_true, 0.0),    # remove -1 values from mask,
         y_pred,
-        sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
+        sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
+        # sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
     )
 
     return loss
