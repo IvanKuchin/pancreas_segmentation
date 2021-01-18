@@ -3,30 +3,16 @@ import os
 
 import tools.config as config
 
-def generator_downsample(filters, size, apply_batchnorm=False):
+
+def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=False, apply_dropout=False):
     model = tf.keras.models.Sequential()
-    model.add(
-        tf.keras.layers.Conv3D(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform')
-    )
-    if (apply_batchnorm):
-        model.add(
-            tf.keras.layers.BatchNormalization()
-        )
-    model.add(
-        tf.keras.layers.ReLU()
-    )
-
-    return model
-
-
-def generator_upsample(filters, size, apply_batchnorm=False, apply_dropout=False):
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv3DTranspose(filters, kernel_size = size, strides = 2, padding = "same", kernel_initializer='he_uniform'))
 
     if apply_batchnorm:
-        model.add(tf.keras.layers.BatchNormalization())
-
-    model.add(tf.keras.layers.ReLU())
+        model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
+        model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
+        model.add(tf.keras.layers.ReLU())
+    else:
+        model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform', activation = "relu"))
 
     if apply_dropout:
         model.add(tf.keras.layers.Dropout(0.5))
@@ -56,20 +42,26 @@ def craft_network(checkpoint_file = None):
         generator_upsample(16, 3),  # (?, 128, 128,  16)
     ]
 
+    filters = [32, 64, 128, 256, 512]
+
     inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
 
     x = inputs
-    generator_steps_otput = []
-    for step in downsample_steps:
-        x = step(x)
-        generator_steps_otput.append(x)
 
-    skip_conns = reversed(generator_steps_otput[:-1])
-    for step, skip_conn in zip(upsample_steps, skip_conns):
-        x = step(x)
-        x = tf.keras.layers.Concatenate(name = "concat_" + step.name)([x, skip_conn])
+    generator_steps_output = []
+    for idx, _filter in enumerate(filters):
+        x = model_step(_filter)(x)
+        generator_steps_output.append(x)
+        if idx < len(filters) - 1:
+            x = tf.keras.layers.Conv3D(_filter, kernel_size = 3, strides=2, padding = "same", kernel_initializer="he_uniform", activation = "relu")(x)
 
-    output_layer = tf.keras.layers.Conv3DTranspose(2, kernel_size = 3, strides = 2, padding = "same")(x)
+    skip_conns = reversed(generator_steps_output[:-1])
+    for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
+        x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform', activation = "relu")(x)
+        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, skip_conn])
+        x = model_step(_filter)(x)
+
+    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
 
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
@@ -77,7 +69,7 @@ def craft_network(checkpoint_file = None):
         print("Loading weights from checkpoint ", checkpoint_file)
         model.load_weights(checkpoint_file)
     else:
-        print("Checkpoint file not found")
+        print("Checkpoint file {} not found".format(checkpoint_file))
 
     return model
 

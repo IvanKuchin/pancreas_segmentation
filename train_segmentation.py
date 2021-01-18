@@ -30,9 +30,15 @@ def get_tensorboard_log_dir():
 
 
 def __custom_loss(y_true, y_pred):
+    y_true = tf.cast(y_true, dtype = tf.float32)
+    y_pred = tf.cast(y_pred, dtype = tf.float32)
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+    loss = scce(
+        y_true,
+        y_pred,
+        sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
+    )
 
-    loss = scce(y_true, y_pred, sample_weight = y_true*5000+1)
     return loss
 
 
@@ -40,13 +46,10 @@ def main():
     ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER)
     # run_through_data_wo_any_action(ds_train, ds_valid)
 
-    model = craft_network("weights.hdf5")
+    model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
 
-    # print(model.summary(line_length = 128))
-    # return
-
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("pancreas_segmentation_checkpoint.h5")
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
 
     model.compile(optimizer = "adam", loss = __custom_loss,

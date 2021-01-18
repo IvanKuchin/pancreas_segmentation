@@ -11,14 +11,14 @@ def double_conv(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropou
 
     model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
     if (apply_batchnorm):
-        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
     model.add(tf.keras.layers.ReLU())
     if (apply_dropout):
         model.add(tf.keras.layers.Dropout(0.5))
 
     model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
     if (apply_batchnorm):
-        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
     model.add(tf.keras.layers.ReLU())
     if (apply_dropout):
         model.add(tf.keras.layers.Dropout(0.5))
@@ -66,7 +66,7 @@ def craft_network(checkpoint_file = None):
         print("Loading weights from checkpoint ", checkpoint_file)
         model.load_weights(checkpoint_file)
     else:
-        print("Checkpoint file not found")
+        print("Checkpoint file {} not found".format(checkpoint_file))
 
     return model
 
