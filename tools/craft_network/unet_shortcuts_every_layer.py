@@ -21,27 +21,6 @@ def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=False, apply_dropou
 
 
 def craft_network(checkpoint_file = None):
-    downsample_steps = [
-        generator_downsample(16, 3),  # (?, 128, 128, 16)
-        generator_downsample(32, 3),  # (?,  64,  64, 32)
-        generator_downsample(64, 3),  # (?,  32,  32, 64)
-        generator_downsample(128, 3),  # (?,  16,  16, 128)
-        generator_downsample(256, 3),  # (?,   8,   8, 256)
-        generator_downsample(512, 3),  # (?,   4,   4, 512)
-        #     generator_downsample(512, 3), # (?, 2, 2, 512)
-        #         generator_downsample(512, 3), # (?, 1, 1, 512)
-    ]
-
-    upsample_steps = [
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 2, 2, 512)
-        #         generator_upsample(512, 4, apply_dropout=True), # (?, 4, 4, 512)
-        generator_upsample(256, 3),  # (?,   8,   8, 256)
-        generator_upsample(128, 3),  # (?,  16,  16, 128)
-        generator_upsample(64, 3),  # (?,  32,  32,  64)
-        generator_upsample(32, 3),  # (?,  64,  64,  32)
-        generator_upsample(16, 3),  # (?, 128, 128,  16)
-    ]
-
     filters = [32, 64, 128, 256, 512]
 
     inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
