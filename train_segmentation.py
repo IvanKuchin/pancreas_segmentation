@@ -34,12 +34,18 @@ def __custom_loss(y_true, y_pred):
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
 
+    count_0 = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
+    count_1 = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
+
+    background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
+    foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER
+
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
         tf.maximum(y_true, 0.0),    # remove -1 values from mask,
         y_pred,
-        sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
-        # sample_weight = y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS
+        sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
+        # sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
     )
 
     return loss
@@ -68,7 +74,7 @@ def main():
                       CategoricalF1(name = 'custom_f1'),
                   ])
 
-    history = model.fit(ds_train, epochs = 1, validation_data = ds_valid, callbacks = [checkpoint_cb, tensorboard_cb])
+    history = model.fit(ds_train, epochs = 2, validation_data = ds_valid, callbacks = [checkpoint_cb, tensorboard_cb])
 
 
 if __name__ == "__main__":
