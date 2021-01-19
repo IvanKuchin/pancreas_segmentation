@@ -195,7 +195,7 @@ class CT150:
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 
         # labels must be
-        # -1, if HU <-100 or >200
+        # -1, if HU in [pancreas HU-s]
         #  0 - background
         #  1 - pancreas
         if np.min(label) != -1:
