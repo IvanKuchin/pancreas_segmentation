@@ -139,6 +139,9 @@ class CT150:
         # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
         # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
 
+        #
+        # output minHU/maxHU of pancreas area
+        #
         # gt_idx = label == 1
         # min_HU = np.min(data[gt_idx])
         # max_HU = np.max(data[gt_idx])
