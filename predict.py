@@ -28,14 +28,15 @@ class Predict:
         return result
 
     def __preprocess_data(self, data):
-        data = resize_3d.resize_3d_image(data, tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
+        data = resize_3d.resize_3d_image(data, tf.constant(
+            [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
         data = tf.cast(data, tf.float32)
 
         #
-        # keep CT HU in range [-100, 200]
+        # keep CT HU in range [pancreas HU]
         #
-        data = tf.minimum(data, 200)
-        data = tf.maximum(data, -100)
+        data = tf.minimum(data, config.PANCREAS_MAX_HU)
+        data = tf.maximum(data, config.PANCREAS_MIN_HU)
 
         #
         # scale CT to range [-1, 1]
@@ -51,7 +52,6 @@ class Predict:
         mask = mask[..., tf.newaxis]
         return mask
 
-
     def __get_patient_position_from_first_frame(self, dcm_slices):
         min_number = dcm_slices[0][0x0020, 0x0013].value
         min_idx = 0
@@ -61,7 +61,6 @@ class Predict:
                 min_idx = idx
 
         return dcm_slices[min_idx][0x0020, 0x0032].value
-
 
     def __get_affine_matrix(self, dcm_slices):
         result = []
@@ -78,34 +77,31 @@ class Predict:
         dcm_patient_position = self.__get_patient_position_from_first_frame(dcm_slices)
 
         affine = np.zeros([4, 4])
-        affine[0,0] = dcm_patient_orientation[0] * dcm_pixel_spacing[0]
-        affine[1,0] = dcm_patient_orientation[1] * dcm_pixel_spacing[0]
-        affine[2,0] = dcm_patient_orientation[2] * dcm_pixel_spacing[0]
+        affine[0, 0] = dcm_patient_orientation[0] * dcm_pixel_spacing[0]
+        affine[1, 0] = dcm_patient_orientation[1] * dcm_pixel_spacing[0]
+        affine[2, 0] = dcm_patient_orientation[2] * dcm_pixel_spacing[0]
 
-        affine[0,1] = dcm_patient_orientation[3] * dcm_pixel_spacing[1]
-        affine[1,1] = dcm_patient_orientation[4] * dcm_pixel_spacing[1]
-        affine[2,1] = dcm_patient_orientation[5] * dcm_pixel_spacing[1]
+        affine[0, 1] = dcm_patient_orientation[3] * dcm_pixel_spacing[1]
+        affine[1, 1] = dcm_patient_orientation[4] * dcm_pixel_spacing[1]
+        affine[2, 1] = dcm_patient_orientation[5] * dcm_pixel_spacing[1]
 
         # --- inverse axes X and Y. This was found experimental way
         # --- could be wrong ... 
-        affine[0,0] = -affine[0,0]
-        affine[1,0] = -affine[1,0]
-        affine[2,0] = -affine[2,0]
+        affine[0, 0] = -affine[0, 0]
+        affine[1, 0] = -affine[1, 0]
+        affine[2, 0] = -affine[2, 0]
 
-        affine[0,1] = -affine[0,1]
-        affine[1,1] = -affine[1,1]
-        affine[2,1] = -affine[2,1]
+        affine[0, 1] = -affine[0, 1]
+        affine[1, 1] = -affine[1, 1]
+        affine[2, 1] = -affine[2, 1]
 
+        affine[2, 2] = dcm_slice_thickness
 
-
-        affine[2,2] = dcm_slice_thickness
-
-        affine[0,3] = dcm_patient_position[0]
-        affine[1,3] = dcm_patient_position[1]
-        affine[2,3] = dcm_patient_position[2]
+        affine[0, 3] = dcm_patient_position[0]
+        affine[1, 3] = dcm_patient_position[1]
+        affine[2, 3] = dcm_patient_position[2]
 
         return affine
-
 
     def __resize_mask_to_dcm_shape(self, mask, dcm_slices):
         dcm_rows = dcm_slices[0][0x0028, 0x0010].value
@@ -125,7 +121,9 @@ class Predict:
         if len(title):
             print(title)
         print("shape", data.shape)
-        print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data), tf.reduce_mean(tf.cast(data, dtype=tf.float32)), tf.reduce_max(data), tf.reduce_sum(data)))
+        print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data),
+                                                        tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
+                                                        tf.reduce_max(data), tf.reduce_sum(data)))
 
     def main(self, dcm_folder):
         dcm_slices = self.__read_dcm_slices(dcm_folder)
@@ -143,11 +141,12 @@ class Predict:
         mask = tf.squeeze(mask)
         affine_matrix = self.__get_affine_matrix(dcm_slices)
 
-        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype=np.uint8), affine_matrix)
+        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix)
 
         self.__print_stat(src_data, "src CT data")
         self.__print_stat(mask, "mask")
         print(affine_matrix)
+
 
 if __name__ == "__main__":
     pred = Predict()
