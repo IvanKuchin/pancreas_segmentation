@@ -139,18 +139,24 @@ class CT150:
         # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
         # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
 
-        #
-        # Restrict CT voxel values to [-100, 200], this will give wider range to pancreas,
-        # compare to original data [-1000, 2000]
-        #
-        data_idx1 = data <= -100
-        data_idx2 = data >= 200
+        # gt_idx = label == 1
+        # min_HU = np.min(data[gt_idx])
+        # max_HU = np.max(data[gt_idx])
+        # print("minTotal/minHU/maxHU/maxTotal: {}/{}/{}/{}".format(np.min(data), min_HU, max_HU, np.max(data)))
 
-        data[data_idx1] = -100
-        data[data_idx2] = 200
 
         #
-        # Assign -1 to mask that matches < -100 and > 200 data voxels
+        # Restrict CT voxel values to [pancreas HU], this will give wider range to pancreas,
+        # compare to original data [pancreas HU]
+        #
+        data_idx1 = data <= config.PANCREAS_MIN_HU
+        data_idx2 = data >= config.PANCREAS_MAX_HU
+
+        data[data_idx1] = config.PANCREAS_MIN_HU
+        data[data_idx2] = config.PANCREAS_MAX_HU
+
+        #
+        # Assign -1 to mask that is outside of pancreas HU
         #
         label[data_idx1] = -1
         label[data_idx2] = -1
