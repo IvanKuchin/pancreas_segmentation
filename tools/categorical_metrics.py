@@ -33,8 +33,8 @@ class CategoricalF1(tf.keras.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred = tf.argmax(y_pred, axis = -1)
         y_pred = y_pred[..., tf.newaxis]
-        self.precision.update_state(y_true, y_pred, sample_weight)
-        self.recall.update_state(y_true, y_pred, sample_weight)
+        self.precision.update_state(tf.maximum(y_true, 0), y_pred, sample_weight)
+        self.recall.update_state(tf.maximum(y_true, 0), y_pred, sample_weight)
 
     def result(self):
         __prec = self.precision.result()

@@ -4,7 +4,7 @@ import os
 import tools.config as config
 
 
-def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=False, apply_dropout=False):
+def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropout=False):
     model = tf.keras.models.Sequential()
 
     if apply_batchnorm:
@@ -20,7 +20,7 @@ def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=False, apply_dropou
     return model
 
 
-def craft_network(checkpoint_file = None):
+def craft_network(checkpoint_file = None, apply_batchnorm=True):
     filters = [32, 64, 128, 256, 512]
 
     inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
@@ -29,7 +29,7 @@ def craft_network(checkpoint_file = None):
 
     generator_steps_output = []
     for idx, _filter in enumerate(filters):
-        x = model_step(_filter)(x)
+        x = model_step(_filter, apply_batchnorm=apply_batchnorm)(x)
         generator_steps_output.append(x)
         if idx < len(filters) - 1:
             x = tf.keras.layers.Conv3D(_filter, kernel_size = 3, strides=2, padding = "same", kernel_initializer="he_uniform", activation = "relu")(x)
@@ -38,7 +38,7 @@ def craft_network(checkpoint_file = None):
     for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
         x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform', activation = "relu")(x)
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, skip_conn])
-        x = model_step(_filter)(x)
+        x = model_step(_filter, apply_batchnorm=apply_batchnorm)(x)
 
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
 

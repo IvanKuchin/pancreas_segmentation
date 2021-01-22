@@ -26,7 +26,7 @@ def double_conv(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropou
     return model
 
 
-def craft_network(checkpoint_file = None):
+def craft_network(checkpoint_file = None, apply_batchnorm=True):
     downsample_steps = [
         double_conv(32, 3),   # (?, 128, 128, __filters__)
         double_conv(64, 3),   # (?,  64,  64, __filters__)
@@ -47,7 +47,7 @@ def craft_network(checkpoint_file = None):
     x = inputs
     generator_steps_output = []
     for idx, _filter in enumerate(filters):
-        x = double_conv(_filter)(x)
+        x = double_conv(_filter, apply_batchnorm=apply_batchnorm)(x)
         generator_steps_output.append(x)
         if idx < len(filters) - 1:
             x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 2), padding = "same")(x)
@@ -56,7 +56,7 @@ def craft_network(checkpoint_file = None):
     for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
         x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform')(x)
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, skip_conn])
-        x = double_conv(_filter)(x)
+        x = double_conv(_filter, apply_batchnorm=apply_batchnorm)(x)
 
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
 
