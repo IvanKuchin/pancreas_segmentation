@@ -198,9 +198,15 @@ class CT150:
         # -1, if HU in [pancreas HU-s]
         #  0 - background
         #  1 - pancreas
-        if np.min(label) != -1:
-            result = False
-            print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
+        if config.PANCREAS_MIN_HU > 2000:
+            if np.min(label) != -1:
+                result = False
+                print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
+        else:
+            if np.min(label) != 0:
+                result = False
+                print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
+
         if np.mean(label) == 0:
             result = False
             print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))

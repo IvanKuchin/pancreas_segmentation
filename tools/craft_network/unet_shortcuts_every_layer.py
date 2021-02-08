@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 
 import tools.config as config
+from tools.craft_network.att_gate import attention_gate
 
 
 def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropout=False):
@@ -37,7 +38,10 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
     skip_conns = reversed(generator_steps_output[:-1])
     for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
         x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform', activation = "relu")(x)
-        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, skip_conn])
+
+        gated_skip_conn = attention_gate(x = skip_conn, g = x, apply_batchnorm = apply_batchnorm)
+
+        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([gated_skip_conn, skip_conn])
         x = model_step(_filter, apply_batchnorm=apply_batchnorm)(x)
 
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
