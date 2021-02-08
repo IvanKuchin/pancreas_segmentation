@@ -39,9 +39,9 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
     for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
         x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = 3, strides = 2, padding = "same", kernel_initializer='he_uniform', activation = "relu")(x)
 
-        gated_skip_conn = attention_gate(x = skip_conn, g = x, apply_batchnorm = apply_batchnorm)
+        gated_skip_conn = attention_gate(x = skip_conn, gated = x, apply_batchnorm = apply_batchnorm)
 
-        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([gated_skip_conn, skip_conn])
+        x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip_conn])
         x = model_step(_filter, apply_batchnorm=apply_batchnorm)(x)
 
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
