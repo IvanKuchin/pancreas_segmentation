@@ -11,20 +11,20 @@ def attention_gate(x, gated, apply_batchnorm=True):
 
     inter_filters = gated.shape[-1] // 2
 
-    phi_g = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same")(gated)
-    theta_x = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same")(x)
+    phi_g = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(gated)
+    theta_x = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(x)
 
     __sum = tf.keras.layers.Add()([phi_g, theta_x])
 
     __activation_sum = tf.keras.layers.Activation("relu")(__sum)
 
-    psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same")(__activation_sum)
+    psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(__activation_sum)
 
     __activation_psi = tf.keras.layers.Activation("sigmoid")(psi)
 
     __mul = tf.keras.layers.Multiply()([x, __activation_psi])
 
-    __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same")(__mul)
+    __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(__mul)
     if apply_batchnorm:
         __result = tf.keras.layers.BatchNormalization()(__result)
 
