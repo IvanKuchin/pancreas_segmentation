@@ -38,7 +38,7 @@ def __custom_loss(y_true, y_pred):
     count_1 = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
 
     background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
-    foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER
+    foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
 
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
