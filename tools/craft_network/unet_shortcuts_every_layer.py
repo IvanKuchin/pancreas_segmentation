@@ -8,15 +8,16 @@ from tools.craft_network.att_gate import attention_gate
 def model_step(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropout=False):
     model = tf.keras.models.Sequential()
 
-    if apply_batchnorm:
-        model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
-        model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
-        model.add(tf.keras.layers.ReLU())
-    else:
-        model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform', activation = "relu"))
+    for i in range(config.NUMBER_OF_CONV_IN_LAYER):
+        if apply_batchnorm:
+            model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
+            model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
+            model.add(tf.keras.layers.ReLU())
+        else:
+            model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform', activation = "relu"))
 
-    if apply_dropout:
-        model.add(tf.keras.layers.Dropout(0.5))
+        if apply_dropout:
+            model.add(tf.keras.layers.Dropout(0.5))
 
     return model
 
