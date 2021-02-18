@@ -2,17 +2,24 @@ import tensorflow as tf
 
 def attention_gate(x, gated, apply_batchnorm=True):
     assert x.shape[0] == gated.shape[0]
-    assert x.shape[1] == gated.shape[1]
-    assert x.shape[2] == gated.shape[2]
-    assert x.shape[3] == gated.shape[3]
+    assert x.shape[1] >= gated.shape[1]
+    assert x.shape[2] >= gated.shape[2]
+    assert x.shape[3] >= gated.shape[3]
 
     # input_x = tf.keras.layers.Input(shape = x.shape[1:])
     # input_g = tf.keras.layers.Input(shape = g.shape[1:])
 
-    inter_filters = gated.shape[-1] // 2
+    __inter_filters = x.shape[-1]
 
-    phi_g = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(gated)
-    theta_x = tf.keras.layers.Conv3D(inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(x)
+    phi_g = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(gated)
+    theta_x = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(x)
+
+    theta_x_shape = tf.Variable(theta_x.shape[1:-1])
+    phi_g_shape = tf.Variable(phi_g.shape[1:-1])
+
+    phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
+
+    print("phi_g_upsampled {}, phi_g.shape {}, theta_x {}".format(phi_g_upsampled.shape, phi_g.shape, theta_x.shape))
 
     __sum = tf.keras.layers.Add()([phi_g, theta_x])
 
@@ -33,19 +40,19 @@ def attention_gate(x, gated, apply_batchnorm=True):
 
 
 if __name__ == "__main__":
+    result = attention_gate(x = tf.random.uniform([3, 64, 64, 64, 16]), gated = tf.random.uniform([3, 16, 16, 64, 128]), apply_batchnorm = False)
+    exit(0)
+
     rnd = tf.random.uniform([3, 64, 64, 64, 16])
 
     inp = tf.keras.layers.Input(shape = rnd.shape[1:])
     x = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
     gated = tf.keras.layers.Conv3D(128, kernel_size = 8, strides = 4, padding = "same")(inp)
 
-    # result = attention_gate(x = x, gated = gated, apply_batchnorm = False)
+    result = attention_gate(x = x, gated = gated, apply_batchnorm = False)
+    model = tf.keras.models.Model(inputs = [inp], outputs = [result])
+    print(model(x).shape)
 
-    # model = tf.keras.models.Model(inputs = [inp], outputs = [result])
-
-    # print(model(x).shape)
-
-    model = tf.keras.models.Model(inputs = [inp], outputs = [x, gated])
-
-    outputs = model(x)
-    print("x.shape = {}, gated.shape={}".format(outputs[0].shape, outputs[1].shape))
+    # model = tf.keras.models.Model(inputs = [inp], outputs = [x, gated])
+    # outputs = model(x)
+    # print("x.shape = {}, gated.shape={}".format(outputs[0].shape, outputs[1].shape))
