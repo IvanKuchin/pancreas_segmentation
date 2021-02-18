@@ -33,15 +33,19 @@ def attention_gate(x, gated, apply_batchnorm=True):
 
 
 if __name__ == "__main__":
-    x = tf.random.uniform([3, 64, 64, 64, 16])
-    gate = tf.random.uniform([3, 64, 64, 64, 32])
+    rnd = tf.random.uniform([3, 64, 64, 64, 16])
 
-    inp = tf.keras.layers.Input(shape = x.shape[1:])
-    conv1 = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
-    conv2 = tf.keras.layers.Conv3D(64, kernel_size = 1, strides = 1, padding = "same")(inp)
+    inp = tf.keras.layers.Input(shape = rnd.shape[1:])
+    x = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
+    gated = tf.keras.layers.Conv3D(128, kernel_size = 8, strides = 4, padding = "same")(inp)
 
-    result = attention_gate(x = conv1, gated = conv2, apply_batchnorm = False)
+    # result = attention_gate(x = x, gated = gated, apply_batchnorm = False)
 
-    model = tf.keras.models.Model(inputs = [inp], outputs = [result])
+    # model = tf.keras.models.Model(inputs = [inp], outputs = [result])
 
-    print(model(x).shape)
+    # print(model(x).shape)
+
+    model = tf.keras.models.Model(inputs = [inp], outputs = [x, gated])
+
+    outputs = model(x)
+    print("x.shape = {}, gated.shape={}".format(outputs[0].shape, outputs[1].shape))
