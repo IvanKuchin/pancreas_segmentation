@@ -14,10 +14,15 @@ def attention_gate(x, gated, apply_batchnorm=True):
     phi_g = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(gated)
     theta_x = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(x)
 
-    theta_x_shape = tf.Variable(theta_x.shape[1:-1])
-    phi_g_shape = tf.Variable(phi_g.shape[1:-1])
-
-    phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
+    # theta_x_shape = theta_x.shape[1:-1]
+    # phi_g_shape = phi_g.shape[1:-1]
+    #
+    # phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
+    phi_g_upsampled = tf.keras.layers.UpSampling3D([
+        theta_x.shape[1] // phi_g.shape[1],
+        theta_x.shape[2] // phi_g.shape[2],
+        theta_x.shape[3] // phi_g.shape[3]
+    ])(phi_g)
 
     __sum = tf.keras.layers.Add()([phi_g_upsampled, theta_x])
 
