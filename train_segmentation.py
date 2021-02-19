@@ -28,6 +28,11 @@ def get_tensorboard_log_dir():
     run_id = time.strftime("run_%Y_%m_%d_%H_%M_%S")
     return os.path.join(root_log_dir, run_id)
 
+def get_csv_dir():
+    root_log_dir = os.path.join(os.curdir, "csv_logs")
+    run_id = time.strftime("run_%Y_%m_%d_%H_%M_%S")
+    return os.path.join(root_log_dir, run_id)
+
 
 def __custom_loss(y_true, y_pred):
 
@@ -58,8 +63,15 @@ def main():
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
 
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT)
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = "", mode = "max", verboose = 2, save_best_only = True)
+    csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator=',', append=True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
+    reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor=0.1,
+                                              monitor='',
+                                              patience=20,
+                                              min_lr=0.00001,
+                                              verbose=1,
+                                              mode='max')
 
     model.compile(optimizer = "adam", loss = __custom_loss,
                   metrics = [
@@ -78,7 +90,13 @@ def main():
         ds_train,
         epochs = config.EPOCHS,
         validation_data = ds_valid,
-        callbacks = [checkpoint_cb, tensorboard_cb],
+        callbacks = [
+            checkpoint_cb,
+            tensorboard_cb,
+            reduce_lr_on_plateau,
+            csv_logger,
+            tf.keras.callbacks.EarlyStopping(monitor='', patience=100, verbose=1),
+            tf.keras.callbacks.TerminateOnNaN()],
         # verbose = 2,
         workers = 2
     )

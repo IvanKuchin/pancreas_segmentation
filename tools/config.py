@@ -1,4 +1,4 @@
-EPOCHS = 300
+EPOCHS = 30000
 
 NUMBER_OF_CONV_IN_LAYER = 2
 
@@ -18,4 +18,5 @@ IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
 
 MODEL_CHECKPOINT = "weights.hdf5"
 
+TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/{}x{}x{}/".format(IMAGE_DIMENSION_X, IMAGE_DIMENSION_Y, IMAGE_DIMENSION_Z)
 TFRECORD_FOLDER = "/docs/src/kt/datasets/ct-150/tfrecords/{}x{}x{}/".format(IMAGE_DIMENSION_X, IMAGE_DIMENSION_Y, IMAGE_DIMENSION_Z)
