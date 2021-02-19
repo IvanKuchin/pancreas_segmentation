@@ -74,7 +74,14 @@ def main():
                       CategoricalF1(name = 'custom_f1'),
                   ])
 
-    history = model.fit(ds_train, epochs = config.EPOCHS, validation_data = ds_valid, callbacks = [checkpoint_cb, tensorboard_cb])
+    history = model.fit(
+        ds_train,
+        epochs = config.EPOCHS,
+        validation_data = ds_valid,
+        callbacks = [checkpoint_cb, tensorboard_cb],
+        # verbose = 2,
+        workers = 2
+    )
 
 
 if __name__ == "__main__":
