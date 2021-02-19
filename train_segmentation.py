@@ -97,7 +97,7 @@ def main():
             csv_logger,
             tf.keras.callbacks.EarlyStopping(monitor='', patience=100, verbose=1),
             tf.keras.callbacks.TerminateOnNaN()],
-        # verbose = 2,
+        verbose = 1,
         workers = 2
     )
 
