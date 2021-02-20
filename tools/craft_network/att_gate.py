@@ -1,48 +1,57 @@
 import tensorflow as tf
 
+
 def attention_gate(x, gated, apply_batchnorm=True):
-    assert x.shape[0] == gated.shape[0]
-    assert x.shape[1] >= gated.shape[1]
-    assert x.shape[2] >= gated.shape[2]
-    assert x.shape[3] >= gated.shape[3]
+    with tf.name_scope("att_gate"):
+        assert x.shape[0] == gated.shape[0]
+        assert x.shape[1] >= gated.shape[1]
+        assert x.shape[2] >= gated.shape[2]
+        assert x.shape[3] >= gated.shape[3]
 
-    # input_x = tf.keras.layers.Input(shape = x.shape[1:])
-    # input_g = tf.keras.layers.Input(shape = g.shape[1:])
+        __filters = x.shape[-1]
 
-    __inter_filters = x.shape[-1]
+        # input_x = tf.keras.layers.Input(shape = x.shape[1:])
+        # input_g = tf.keras.layers.Input(shape = g.shape[1:])
 
-    phi_g = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(gated)
-    theta_x = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(x)
+        __inter_filters = x.shape[-1]
 
-    # theta_x_shape = theta_x.shape[1:-1]
-    # phi_g_shape = phi_g.shape[1:-1]
-    #
-    # phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
-    phi_g_upsampled = tf.keras.layers.UpSampling3D([
-        theta_x.shape[1] // phi_g.shape[1],
-        theta_x.shape[2] // phi_g.shape[2],
-        theta_x.shape[3] // phi_g.shape[3]
-    ])(phi_g)
+        phi_g = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
+                                       kernel_initializer = "he_uniform", name = "phi_{}".format(__filters))(gated)
+        theta_x = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
+                                         kernel_initializer = "he_uniform", name = "theta_{}".format(__filters))(x)
 
-    __sum = tf.keras.layers.Add()([phi_g_upsampled, theta_x])
+        # theta_x_shape = theta_x.shape[1:-1]
+        # phi_g_shape = phi_g.shape[1:-1]
+        #
+        # phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
+        phi_g_upsampled = tf.keras.layers.UpSampling3D([
+            theta_x.shape[1] // phi_g.shape[1],
+            theta_x.shape[2] // phi_g.shape[2],
+            theta_x.shape[3] // phi_g.shape[3]
+        ])(phi_g)
 
-    __activation_sum = tf.keras.layers.Activation("relu")(__sum)
+        __sum = tf.keras.layers.Add(name = "attention_add_{}".format(__filters))([phi_g_upsampled, theta_x])
 
-    psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(__activation_sum)
+        __activation_sum = tf.keras.layers.Activation("relu")(__sum)
 
-    __activation_psi = tf.keras.layers.Activation("sigmoid")(psi)
+        psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
+                                     kernel_initializer = "he_uniform", name = "psi_{}".format(__filters))(
+            __activation_sum)
 
-    __mul = tf.keras.layers.Multiply()([x, __activation_psi])
+        __activation_psi = tf.keras.layers.Activation("sigmoid")(psi)
 
-    # print("phi_g {}, phi_g_upsampled {}, theta_x {}, sum {}".format(phi_g.shape, phi_g_upsampled.shape, theta_x.shape, __sum.shape))
-    # print("psi {}, mul {}".format(psi.shape, __mul.shape))
+        __mul = tf.keras.layers.Multiply(name = "attention_multiplication_{}".format(__filters))([x, __activation_psi])
 
-    __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same", kernel_initializer="he_uniform")(__mul)
-    if apply_batchnorm:
-        __result = tf.keras.layers.BatchNormalization()(__result)
+        # print("phi_g {}, phi_g_upsampled {}, theta_x {}, sum {}".format(phi_g.shape, phi_g_upsampled.shape, theta_x.shape, __sum.shape))
+        # print("psi {}, mul {}".format(psi.shape, __mul.shape))
 
-    # return tf.keras.models.Model(inputs = [input_x, input_g], outputs = [__result])
-    return __result
+        __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same",
+                                          kernel_initializer = "he_uniform")(__mul)
+        if apply_batchnorm:
+            __result = tf.keras.layers.BatchNormalization()(__result)
+
+        # return tf.keras.models.Model(inputs = [input_x, input_g], outputs = [__result])
+        return __result
 
 
 if __name__ == "__main__":
