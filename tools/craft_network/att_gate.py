@@ -47,6 +47,7 @@ def attention_gate(x, gated, apply_batchnorm=True):
 
         __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same",
                                           kernel_initializer = "he_uniform")(__mul)
+
         if apply_batchnorm:
             __result = tf.keras.layers.BatchNormalization()(__result)
 

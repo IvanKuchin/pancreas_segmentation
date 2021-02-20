@@ -35,6 +35,7 @@ def get_gatimg_base(filters, apply_batchnorm = True):
 
     return __model
 
+
 def craft_network(checkpoint_file = None, apply_batchnorm=True):
     filters = [16, 32, 64, 128, 256]
 
