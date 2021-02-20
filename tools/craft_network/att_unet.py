@@ -27,7 +27,7 @@ def double_conv(filters, kernel_size=[3,3,1], apply_batchnorm=True, apply_dropou
     return model
 
 def get_gatimg_base(filters, apply_batchnorm = True):
-    __model = tf.keras.models.Sequential()
+    __model = tf.keras.models.Sequential(name = "gating_base")
 
     __model.add(tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform'))
     if apply_batchnorm:
