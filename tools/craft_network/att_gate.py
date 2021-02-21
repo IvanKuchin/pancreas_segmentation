@@ -23,7 +23,7 @@ class AttGate(tf.keras.layers.Layer):
                                           kernel_initializer = "he_uniform", name = "phi")
 
         self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
-                                            kernel_initializer = "he_uniform", name = "theta")
+                                            use_bias = False, kernel_initializer = "he_uniform", name = "theta")
 
         self.theta_upsample = tf.keras.layers.UpSampling3D([
             x_shape[1] // gated_shape[1],
