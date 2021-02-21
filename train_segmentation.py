@@ -66,7 +66,7 @@ def main():
     # predict_on_random_data(model)
 
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = config.MONITOR_METRIC,
-                                                       mode = "max", verboose = 2, save_best_only = True)
+                                                       mode = config.MONITOR_MODE, verboose = 2, save_best_only = True)
     csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
     reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
@@ -74,8 +74,8 @@ def main():
                                                                 patience = 50,
                                                                 min_lr = 0.00001,
                                                                 verbose = 1,
-                                                                mode = 'max')
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = "max", patience = 200,
+                                                                mode = config.MONITOR_MODE)
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
                                                       verbose = 1)
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = config.INITIAL_LEARNING_RATE),
                   loss = __custom_loss,
