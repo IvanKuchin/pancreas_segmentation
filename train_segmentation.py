@@ -75,7 +75,8 @@ def main():
                                                                 min_lr = 0.00001,
                                                                 verbose = 1,
                                                                 mode = 'max')
-
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = "max", patience = 200,
+                                                      verbose = 1)
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = config.INITIAL_LEARNING_RATE),
                   loss = __custom_loss,
                   metrics = [
@@ -99,8 +100,7 @@ def main():
             tensorboard_cb,
             reduce_lr_on_plateau,
             csv_logger,
-            tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = "max", patience = 200,
-                                             verbose = 1),
+            early_stopping,
             tf.keras.callbacks.TerminateOnNaN()],
         verbose = 1,
         workers = 2
