@@ -14,7 +14,6 @@ class AttGate(tf.keras.layers.Layer):
         assert x_shape[2] >= gated_shape[2]
         assert x_shape[3] >= gated_shape[3]
 
-        __filters = x_shape[-1]
         __inter_filters = x_shape[-1]
 
         if(x_shape[1] == gated_shape[1]):
