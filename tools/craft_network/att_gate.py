@@ -5,7 +5,6 @@ class AttGate(tf.keras.layers.Layer):
     def __init__(self, apply_batchnorm=True, **kwargs):
         super().__init__(**kwargs)
         self.apply_batchnorm = apply_batchnorm
-        self.subsample_factor = [2,2,1]
 
     def build(self, inputs):
         x_shape, gated_shape = inputs
@@ -19,20 +18,22 @@ class AttGate(tf.keras.layers.Layer):
         __inter_filters = x_shape[-1]
 
         if(x_shape[1] == gated_shape[1]):
-            self.subsample_factor = [1,1,1]
+            subsample_factor = [1,1,1]
+        else:
+            subsample_factor = [2,2,1]
 
         # print("{} {}".format())
 
         self.phi = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
                                           kernel_initializer = "he_uniform", name = "phi")
 
-        self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = self.subsample_factor, strides = self.subsample_factor, padding = "same",
+        self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = subsample_factor, strides = subsample_factor, padding = "same",
                                             use_bias = False, kernel_initializer = "he_uniform", name = "theta")
 
         self.phi_upsample = tf.keras.layers.UpSampling3D([
-            x_shape[1] // self.subsample_factor[0] // gated_shape[1],
-            x_shape[2] // self.subsample_factor[1] // gated_shape[2],
-            x_shape[3] // self.subsample_factor[2] // gated_shape[3]
+            x_shape[1] // subsample_factor[0] // gated_shape[1],
+            x_shape[2] // subsample_factor[1] // gated_shape[2],
+            x_shape[3] // subsample_factor[2] // gated_shape[3]
         ])
 
         self.add_g_x = tf.keras.layers.Add(name = "addition")
@@ -41,9 +42,9 @@ class AttGate(tf.keras.layers.Layer):
                                           kernel_initializer = "he_uniform", name = "psi")
 
         self.psi_upsample = tf.keras.layers.UpSampling3D([
-            self.subsample_factor[0],
-            self.subsample_factor[1],
-            self.subsample_factor[2]
+            subsample_factor[0],
+            subsample_factor[1],
+            subsample_factor[2]
         ])
 
         self.multiplication_to_att = tf.keras.layers.Multiply(name = "multiplication")
