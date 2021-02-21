@@ -8,6 +8,7 @@ from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 from tools.craft_network import craft_network
 import tools.config as config
 
+
 def run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
     for idx, (data, label) in enumerate(ds_train):
@@ -23,10 +24,12 @@ def run_through_data_wo_any_action(ds_train, ds_valid):
         print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
         print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)))
 
+
 def get_tensorboard_log_dir():
     root_log_dir = os.path.join(os.curdir, "logs")
     run_id = time.strftime("run_%Y_%m_%d_%H_%M_%S")
     return os.path.join(root_log_dir, run_id)
+
 
 def get_csv_dir():
     root_log_dir = os.path.join(os.curdir, "csv_logs")
@@ -35,7 +38,6 @@ def get_csv_dir():
 
 
 def __custom_loss(y_true, y_pred):
-
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
 
@@ -47,7 +49,7 @@ def __custom_loss(y_true, y_pred):
 
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
-        tf.maximum(y_true, 0.0),    # remove -1 values from mask,
+        tf.maximum(y_true, 0.0),  # remove -1 values from mask,
         y_pred,
         sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
         # sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
@@ -63,15 +65,16 @@ def main():
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
 
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = config.MONITOR_METRIC, mode = "max", verboose = 2, save_best_only = True)
-    csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator=',', append=True)
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = config.MONITOR_METRIC,
+                                                       mode = "max", verboose = 2, save_best_only = False)
+    csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
-    reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor=0.1,
-                                              monitor= config.MONITOR_METRIC,
-                                              patience=20,
-                                              min_lr=0.00001,
-                                              verbose=1,
-                                              mode='max')
+    reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
+                                                                monitor = config.MONITOR_METRIC,
+                                                                patience = 50,
+                                                                min_lr = 0.00001,
+                                                                verbose = 1,
+                                                                mode = 'max')
 
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = config.INITIAL_LEARNING_RATE),
                   loss = __custom_loss,
@@ -96,7 +99,8 @@ def main():
             tensorboard_cb,
             reduce_lr_on_plateau,
             csv_logger,
-            tf.keras.callbacks.EarlyStopping(monitor=config.MONITOR_METRIC, patience=100, verbose=1),
+            tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = "max", patience = 200,
+                                             verbose = 1),
             tf.keras.callbacks.TerminateOnNaN()],
         verbose = 1,
         workers = 2
