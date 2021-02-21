@@ -23,13 +23,23 @@ class AttGate(tf.keras.layers.Layer):
                                           kernel_initializer = "he_uniform", name = "phi")
 
         self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
-                                            kernel_initializer = "he_uniform", name = "theta_{}".format(__filters))
+                                            kernel_initializer = "he_uniform", name = "theta")
 
         self.theta_upsample = tf.keras.layers.UpSampling3D([
             x_shape[1] // gated_shape[1],
             x_shape[2] // gated_shape[2],
             x_shape[3] // gated_shape[3]
         ])
+
+        self.add_g_x = tf.keras.layers.Add(name = "addition")
+
+        self.psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
+                                          kernel_initializer = "he_uniform", name = "psi")
+
+        self.multiplication_to_att = tf.keras.layers.Multiply(name = "multiplication")
+
+        self.W = tf.keras.layers.Conv3D(filters = x_shape[-1], kernel_size = 1, strides = 1, padding = "same",
+                                        kernel_initializer = "he_uniform", name = "W")
 
     def call(self, inputs):
         x, gated = inputs
@@ -46,23 +56,20 @@ class AttGate(tf.keras.layers.Layer):
         # phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
         phi_g_upsampled = self.theta_upsample(phi_g)
 
-        __sum = tf.keras.layers.Add(name = "attention_add_{}".format(__filters))([phi_g_upsampled, theta_x])
+        __sum = self.add_g_x([phi_g_upsampled, theta_x])
 
         __activation_sum = tf.keras.layers.Activation("relu")(__sum)
 
-        psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
-                                     kernel_initializer = "he_uniform", name = "psi_{}".format(__filters))(
-            __activation_sum)
+        psi = self.psi(__activation_sum)
 
         __activation_psi = tf.keras.layers.Activation("sigmoid")(psi)
 
-        __mul = tf.keras.layers.Multiply(name = "attention_multiplication_{}".format(__filters))([x, __activation_psi])
+        __mul = self.multiplication_to_att([x, __activation_psi])
 
         # print("phi_g {}, phi_g_upsampled {}, theta_x {}, sum {}".format(phi_g.shape, phi_g_upsampled.shape, theta_x.shape, __sum.shape))
         # print("psi {}, mul {}".format(psi.shape, __mul.shape))
 
-        __result = tf.keras.layers.Conv3D(filters = x.shape[-1], kernel_size = 1, strides = 1, padding = "same",
-                                          kernel_initializer = "he_uniform")(__mul)
+        __result = self.W(__mul)
 
         if self.apply_batchnorm:
             __result = tf.keras.layers.BatchNormalization()(__result)
@@ -73,6 +80,9 @@ class AttGate(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+    def get_config(self):
+        base_config = super().get_config()
+        return {**base_config, "apply_batchnorm": self.apply_batchnorm}
 
 def attention_gate(x, gated, apply_batchnorm=True):
     with tf.name_scope("att_gate"):

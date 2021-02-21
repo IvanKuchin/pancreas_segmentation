@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 from tools.predict_on_random_data import predict_on_random_data
-from tools.craft_network.att_gate import attention_gate
+from tools.craft_network.att_gate import attention_gate, AttGate
 
 import tools.config as config
 
@@ -59,7 +59,8 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
             # --- don't gate signal due to no useful features at top level
             gated_skip = skip_conn
         else:
-            gated_skip = attention_gate(skip_conn, gating_base, apply_batchnorm = apply_batchnorm)
+            # gated_skip = attention_gate(skip_conn, gating_base, apply_batchnorm = apply_batchnorm)
+            gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, gating_base))
 
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
         x = double_conv(_filter, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm)(x)
