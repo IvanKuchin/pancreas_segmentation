@@ -24,11 +24,11 @@ class AttGate(tf.keras.layers.Layer):
 
         # print("{} {}".format())
 
-        self.phi = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
-                                          kernel_initializer = "he_uniform", name = "phi")
-
         self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = subsample_factor, strides = subsample_factor, padding = "same",
                                             use_bias = False, kernel_initializer = "he_uniform", name = "theta")
+
+        self.phi = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
+                                          kernel_initializer = "he_uniform", name = "phi")
 
         self.phi_upsample = tf.keras.layers.UpSampling3D([
             x_shape[1] // subsample_factor[0] // gated_shape[1],
@@ -55,13 +55,13 @@ class AttGate(tf.keras.layers.Layer):
     def call(self, inputs):
         x, gated = inputs
 
-        print("x {}, g {}".format(x.shape, gated.shape))
+        # print("x {}, g {}".format(x.shape, gated.shape))
         theta_x = self.theta(x)
-        print("theta_x {}".format(theta_x.shape))
+        # print("theta_x {}".format(theta_x.shape))
         phi_g = self.phi(gated)
-        print("phi_g {}".format(phi_g.shape))
+        # print("phi_g {}".format(phi_g.shape))
         phi_g = self.phi_upsample(phi_g)
-        print("upsampled phi_g {}".format(phi_g.shape))
+        # print("upsampled phi_g {}".format(phi_g.shape))
 
 
         __sum = self.add_g_x([theta_x, phi_g])
@@ -69,7 +69,7 @@ class AttGate(tf.keras.layers.Layer):
 
         psi = tf.keras.layers.Activation("sigmoid")(self.psi(__activation_sum))
         psi = self.psi_upsample(psi)
-        print("psi {}".format(psi.shape))
+        # print("psi {}".format(psi.shape))
 
         __mul = self.multiplication_to_att([x, psi])
 
