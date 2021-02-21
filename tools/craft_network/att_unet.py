@@ -26,7 +26,7 @@ def double_conv(filters, kernel_size=[3,3,1], apply_batchnorm=True, apply_dropou
 
     return model
 
-def get_gatimg_base(filters, apply_batchnorm = True):
+def get_gating_base(filters, apply_batchnorm = True):
     __model = tf.keras.models.Sequential(name = "gating_base")
 
     __model.add(tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform'))
@@ -49,7 +49,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
         if idx < len(filters) - 1:
             x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 1), padding = "same")(x)
 
-    gating_base = get_gatimg_base(filters[-2], apply_batchnorm)(x)
+    gating_base = get_gating_base(filters[-2], apply_batchnorm)(x)
 
     skip_conns = reversed(generator_steps_output[:-1])
     for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
