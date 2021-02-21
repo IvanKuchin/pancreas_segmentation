@@ -5,6 +5,7 @@ class AttGate(tf.keras.layers.Layer):
     def __init__(self, apply_batchnorm=True, **kwargs):
         super().__init__(**kwargs)
         self.apply_batchnorm = apply_batchnorm
+        self.subsample_factor = [2,2,1]
 
     def build(self, inputs):
         x_shape, gated_shape = inputs
@@ -17,24 +18,33 @@ class AttGate(tf.keras.layers.Layer):
         __filters = x_shape[-1]
         __inter_filters = x_shape[-1]
 
+        if(x_shape[1] == gated_shape[1]):
+            self.subsample_factor = [1,1,1]
+
         # print("{} {}".format())
 
         self.phi = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
                                           kernel_initializer = "he_uniform", name = "phi")
 
-        self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
+        self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = self.subsample_factor, strides = self.subsample_factor, padding = "same",
                                             use_bias = False, kernel_initializer = "he_uniform", name = "theta")
 
-        self.theta_upsample = tf.keras.layers.UpSampling3D([
-            x_shape[1] // gated_shape[1],
-            x_shape[2] // gated_shape[2],
-            x_shape[3] // gated_shape[3]
+        self.phi_upsample = tf.keras.layers.UpSampling3D([
+            x_shape[1] // self.subsample_factor[0] // gated_shape[1],
+            x_shape[2] // self.subsample_factor[1] // gated_shape[2],
+            x_shape[3] // self.subsample_factor[2] // gated_shape[3]
         ])
 
         self.add_g_x = tf.keras.layers.Add(name = "addition")
 
         self.psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
                                           kernel_initializer = "he_uniform", name = "psi")
+
+        self.psi_upsample = tf.keras.layers.UpSampling3D([
+            self.subsample_factor[0],
+            self.subsample_factor[1],
+            self.subsample_factor[2]
+        ])
 
         self.multiplication_to_att = tf.keras.layers.Multiply(name = "multiplication")
 
@@ -44,13 +54,21 @@ class AttGate(tf.keras.layers.Layer):
     def call(self, inputs):
         x, gated = inputs
 
+        print("x {}, g {}".format(x.shape, gated.shape))
         theta_x = self.theta(x)
-        phi_g = self.theta_upsample(self.phi(gated))
+        print("theta_x {}".format(theta_x.shape))
+        phi_g = self.phi(gated)
+        print("phi_g {}".format(phi_g.shape))
+        phi_g = self.phi_upsample(phi_g)
+        print("upsampled phi_g {}".format(phi_g.shape))
 
-        __sum = self.add_g_x([phi_g, theta_x])
+
+        __sum = self.add_g_x([theta_x, phi_g])
         __activation_sum = tf.keras.layers.Activation("relu")(__sum)
 
         psi = tf.keras.layers.Activation("sigmoid")(self.psi(__activation_sum))
+        psi = self.psi_upsample(psi)
+        print("psi {}".format(psi.shape))
 
         __mul = self.multiplication_to_att([x, psi])
 
@@ -131,6 +149,7 @@ if __name__ == "__main__":
 
     inp = tf.keras.layers.Input(shape = rnd.shape[1:])
     x_shape = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
+    # gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 1), strides = (1, 1, 1), padding = "same")(inp)
     gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 1), strides = (4, 4, 1), padding = "same")(inp)
 
     # result = attention_gate(x = x, gated = gated, apply_batchnorm = False)
