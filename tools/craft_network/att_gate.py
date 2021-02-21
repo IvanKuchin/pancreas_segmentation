@@ -41,11 +41,7 @@ class AttGate(tf.keras.layers.Layer):
         self.psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
                                           kernel_initializer = "he_uniform", name = "psi")
 
-        self.psi_upsample = tf.keras.layers.UpSampling3D([
-            subsample_factor[0],
-            subsample_factor[1],
-            subsample_factor[2]
-        ])
+        self.psi_upsample = tf.keras.layers.UpSampling3D(subsample_factor)
 
         self.multiplication_to_att = tf.keras.layers.Multiply(name = "multiplication")
 
