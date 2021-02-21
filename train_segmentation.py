@@ -71,7 +71,8 @@ def main():
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
     reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
                                                                 monitor = config.MONITOR_METRIC,
-                                                                patience = 50,
+                                                                patience = 20,
+                                                                cooldown = 10,
                                                                 min_lr = 0.00001,
                                                                 verbose = 1,
                                                                 mode = config.MONITOR_MODE)
