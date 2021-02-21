@@ -44,27 +44,15 @@ class AttGate(tf.keras.layers.Layer):
     def call(self, inputs):
         x, gated = inputs
 
-        __filters = x.shape[-1]
-        __inter_filters = x.shape[-1]
-
-        phi_g = self.phi(gated)
         theta_x = self.theta(x)
+        phi_g = self.theta_upsample(self.phi(gated))
 
-        # theta_x_shape = theta_x.shape[1:-1]
-        # phi_g_shape = phi_g.shape[1:-1]
-        #
-        # phi_g_upsampled = tf.keras.layers.UpSampling3D(tf.divide(theta_x_shape, phi_g_shape))(phi_g)
-        phi_g_upsampled = self.theta_upsample(phi_g)
-
-        __sum = self.add_g_x([phi_g_upsampled, theta_x])
-
+        __sum = self.add_g_x([phi_g, theta_x])
         __activation_sum = tf.keras.layers.Activation("relu")(__sum)
 
-        psi = self.psi(__activation_sum)
+        psi = tf.keras.layers.Activation("sigmoid")(self.psi(__activation_sum))
 
-        __activation_psi = tf.keras.layers.Activation("sigmoid")(psi)
-
-        __mul = self.multiplication_to_att([x, __activation_psi])
+        __mul = self.multiplication_to_att([x, psi])
 
         # print("phi_g {}, phi_g_upsampled {}, theta_x {}, sum {}".format(phi_g.shape, phi_g_upsampled.shape, theta_x.shape, __sum.shape))
         # print("psi {}, mul {}".format(psi.shape, __mul.shape))
