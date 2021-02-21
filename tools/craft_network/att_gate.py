@@ -14,7 +14,7 @@ class AttGate(tf.keras.layers.Layer):
         assert x_shape[2] >= gated_shape[2]
         assert x_shape[3] >= gated_shape[3]
 
-        __inter_filters = x_shape[-1]
+        __inter_filters = x_shape[-1] // 2
 
         if(x_shape[1] == gated_shape[1]):
             subsample_factor = [1,1,1]
