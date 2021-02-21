@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 from tools.predict_on_random_data import predict_on_random_data
-from tools.craft_network.att_gate import attention_gate, AttGate
+from tools.craft_network.att_gate import AttGate
 
 import tools.config as config
 

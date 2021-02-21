@@ -90,7 +90,7 @@ class AttGate(tf.keras.layers.Layer):
         base_config = super().get_config()
         return {**base_config, "apply_batchnorm": self.apply_batchnorm}
 
-def attention_gate(x, gated, apply_batchnorm=True):
+def __attention_gate(x, gated, apply_batchnorm=True):
     with tf.name_scope("att_gate"):
         assert x.shape[0] == gated.shape[0]
         assert x.shape[1] >= gated.shape[1]
