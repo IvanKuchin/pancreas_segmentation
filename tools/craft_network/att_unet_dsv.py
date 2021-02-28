@@ -3,6 +3,7 @@ import os
 
 from tools.predict_on_random_data import predict_on_random_data
 from tools.craft_network.att_gate import AttGate
+from tools.craft_network.dsv import DSV
 
 import tools.config as config
 
@@ -51,8 +52,9 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 
     gating_base = get_gating_base(filters[-2], apply_batchnorm)(x)
 
+    dsv_outputs = []
     skip_conns = reversed(generator_steps_output[:-1])
-    for _filter, skip_conn in zip(reversed(filters[:-1]), skip_conns):
+    for idx, (_filter, skip_conn) in enumerate(zip(reversed(filters[:-1]), skip_conns)):
         x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = [4,4,1], strides = [2,2,1], padding = "same", kernel_initializer='he_uniform')(x)
 
         if _filter == filters[0]:
@@ -65,7 +67,16 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
         x = double_conv(_filter, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm)(x)
 
-    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x)
+        if _filter == filters[0]:
+            dsv_outputs.append(tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x))
+        else:
+            dsv_outputs.append(DSV(filters[-1] // filters[idx + 1])(x))
+        # print("{} -> {}".format(x.shape, dsv_outputs[-1].shape))
+
+    concat_layer = tf.keras.layers.Concatenate()(dsv_outputs)
+    # print("{}".format(concat_layer.shape))
+
+    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(concat_layer)
 
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
