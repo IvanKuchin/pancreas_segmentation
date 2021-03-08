@@ -50,9 +50,8 @@ def __custom_loss(y_true, y_pred):
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
-        y_pred,
-        sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
-        # sample_weight = tf.maximum(y_true * config.WEIGHT_SCALE + config.WEIGHT_BIAS, 0.0)
+        y_pred
+        # sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
     )
 
     return loss
