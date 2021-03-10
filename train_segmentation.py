@@ -47,11 +47,14 @@ def __custom_loss(y_true, y_pred):
     background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
     foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
 
+    background_weight = 1
+    foreground_weight = 1 # due to weight calculation foreground get scale 2
+
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
-        y_pred
-        # sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
+        y_pred,
+        sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
     )
 
     return loss
