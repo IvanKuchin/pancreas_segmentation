@@ -112,9 +112,9 @@ class Predict:
 
         return result
 
-    def __save_img_to_nifti(self, data, affine):
+    def __save_img_to_nifti(self, data, affine, result_file_name):
         img_to_save = nib.Nifti1Image(data, affine)
-        nib.save(img_to_save, "prediction.nii")
+        nib.save(img_to_save, result_file_name)
 
     def __print_stat(self, data, title=""):
         print('-' * 100)
@@ -125,7 +125,7 @@ class Predict:
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
                                                         tf.reduce_max(data), tf.reduce_sum(data)))
 
-    def main(self, dcm_folder):
+    def main(self, dcm_folder, result_file_name):
         dcm_slices = self.__read_dcm_slices(dcm_folder)
         raw_pixel_data = self.__get_pixel_data(dcm_slices)
         src_data = self.__preprocess_data(raw_pixel_data)
@@ -141,7 +141,7 @@ class Predict:
         mask = tf.squeeze(mask)
         affine_matrix = self.__get_affine_matrix(dcm_slices)
 
-        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix)
+        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix, result_file_name)
 
         self.__print_stat(src_data, "src CT data")
         self.__print_stat(mask, "mask")
@@ -150,4 +150,4 @@ class Predict:
 
 if __name__ == "__main__":
     pred = Predict()
-    pred.main("predict")
+    pred.main("predict", "prediction.nii")
