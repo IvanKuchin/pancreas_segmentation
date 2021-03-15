@@ -47,8 +47,9 @@ def __custom_loss(y_true, y_pred):
     background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
     foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
 
-    background_weight = 1
-    foreground_weight = 2 # final weight will be 2 + 1
+    background_weight = config.BACKGROUND_WEIGHT
+    foreground_weight = config.FOREGROUND_WEIGHT
+    foreground_weight -= background_weight
 
     scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
     loss = scce(
@@ -73,9 +74,9 @@ def main():
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
     reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
                                                                 monitor = config.MONITOR_METRIC,
-                                                                patience = 20,
+                                                                patience = 30,
                                                                 cooldown = 10,
-                                                                min_lr = 0.00001,
+                                                                min_lr = 0.000001,
                                                                 verbose = 1,
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
@@ -103,7 +104,7 @@ def main():
             tensorboard_cb,
             reduce_lr_on_plateau,
             csv_logger,
-            early_stopping,
+            # early_stopping,
             tf.keras.callbacks.TerminateOnNaN()],
         verbose = 1,
         workers = 2
