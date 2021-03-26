@@ -27,7 +27,7 @@ Weighted DSC (Dice Similarity Coefficient) used as a loss function. Best weight 
 
 Whole network has been trained end-to-end, w/o any tiling. Reasoning is to avoid artifacts where pancreas segmentation cut to a tile edge.
 
-Every CT downscaled to dimensionality 160x160x160, this is the maximum size that fits into TeslaK40m (12GB RAM). Pooling implemented over WxD dimensions, D (depth) keeps constant (ie 160 over whole network), this helps a little with segmentation recovery.
+Every CT downscaled to dimensionality 160x160x160, this is the maximum size that fits into TeslaK40m (12GB RAM). Pooling implemented over WxD dimensions, D (depth) keeps constant (ie 160 over whole network), this helps a little with segmentation recovery. Single CT in a training batch, therefore BatchNormalization was not in use.
 
 Optimization algoritm Adam with start learning rate 0.002 then reduce on plateau by 0.1 over 30 epochs. Total number of epochs restricted to 1000.
 
@@ -45,9 +45,9 @@ Learned weights are available [here](http://images.infomed-stat.ru/tensorflow/we
 
 ### Inference
 
-Requirement: tensorflow 2.3 (you could try latest version, but no guarantee that it will work)
+*Pre-requisite*: tensorflow 2.3 (you could try latest version, but no guarantee that it will work)
 
-Inference can be done on regular laptop without any GPU installed. Time required for inference ~10-15 seconds.
+Inference can be done on a regular laptop without any GPU installed. Time required for inference ~10-15 seconds.
 
 To test segmentation on your data
 1. Clone this repository `github clone https://github.com/IvanKuchin/pancreas_segmentation.git`
