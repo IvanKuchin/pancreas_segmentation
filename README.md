@@ -12,7 +12,7 @@ Tensorflow implementation of a 3D-CNN U-net with Grid Attention and DSV for panc
 
 ## Training
 
-Network has been trained on publicly accessible dataset CT-82 from [TCIA](https://wiki.cancerimagingarchive.net/display/Public/Pancreas-CT#0c26eab54502412cbbd0e1c0fddd917b) (64/16 split between train/validation)
+Network has been trained on publicly accessible dataset CT-82 from [TCIA](https://wiki.cancerimagingarchive.net/display/Public/Pancreas-CT#0c26eab54502412cbbd0e1c0fddd917b) (64/16 split between training/validation)
 
 Weighted DSC (Dice Similarity Coefficient) used as a loss function. Best weight hyperparameter served to my purposes selected as 7.
 - recall ~95%
