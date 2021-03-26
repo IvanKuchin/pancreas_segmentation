@@ -36,8 +36,9 @@ Training took ~60 hours on a single server with a single GPU NVIDIA TeslaK40m. M
 tensorflow container used as a runtime environment:
 
 ```
-docker pull tensorflow/tensorflow:2.3.2-gpu
+docker run --rm -it tensorflow/tensorflow:2.3.2-gpu /bin/bash
 github clone https://github.com/IvanKuchin/pancreas_segmentation.git
+cd panreas_segmentation
 python train_segmentation.py
 ```
 
