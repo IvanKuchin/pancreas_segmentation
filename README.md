@@ -41,3 +41,24 @@ github clone https://github.com/IvanKuchin/pancreas_segmentation.git
 python train_segmentation.py
 ```
 
+Learned weights are available [here](http://images.infomed-stat.ru/tensorflow/weights.hdf5) due to GitHub limitation on big files.
+
+### Inference
+
+Requirement: tensorflow 2.3 (you could try latest version, but no guarantee that it will work)
+
+Inference can be done on regular laptop without any GPU installed.
+
+To test segmentation on your data
+1. Clone this repository `github clone https://github.com/IvanKuchin/pancreas_segmentation.git`
+2. Create `predict` folder in cloned folder and put there single pass CT. If it will contain multiple passes result is unpredictable.
+3. Download `weights.hdf5` from the link above and put it in cloned folder
+4. `python predict.py`
+
+All magic happening in last three lines 
+```
+if __name__ == "__main__":
+    pred = Predict()
+    pred.main("predict", "prediction.nii")
+```
+
