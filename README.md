@@ -65,3 +65,16 @@ if __name__ == "__main__":
 ```
 
 I used [3DSlicer](https://download.slicer.org/) to check the results visually.
+
+## An importance of probability distribution in source data
+
+Network has been trained on CT-82 where every scan is contrast-free. Means that network should recognize similar scans to CT-82 probability distribution. 
+I've tried to test CT **with contrast**, result was unsatisfied. 
+
+## Some results
+
+Video recordings of segmentation result posted on [connme.ru](https://www.connme.ru) in a group *Pancreas cancer detection*
+
+
+
+
