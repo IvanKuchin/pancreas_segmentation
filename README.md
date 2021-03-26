@@ -73,7 +73,7 @@ I've tried to test CT **with contrast**, result was unsatisfied.
 
 ## Some results
 
-Video recordings of segmentation result posted on [connme.ru](https://www.connme.ru) in a group *Pancreas cancer detection*
+Video recording of segmentation results posted on [connme.ru](https://www.connme.ru) in a group *Pancreas cancer detection*
 
 
 
