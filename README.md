@@ -77,7 +77,7 @@ I've tried to test CT **with contrast**, result was unsatisfied.
 Video recording of segmentation results posted on [connme.ru](https://www.connme.ru) in a group *Pancreas cancer detection*
 
 Example of prediction in 3DSlicer (prediction: green, ground truth: red)
-![image](https://user-images.githubusercontent.com/26530162/113589478-61816080-95ff-11eb-8042-b266c9ec7c1c.png)
 
+![image](https://user-images.githubusercontent.com/26530162/113589582-8970c400-95ff-11eb-8bb7-aa85f1d312dd.png)
 
 
