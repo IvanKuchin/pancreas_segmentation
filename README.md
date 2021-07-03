@@ -42,7 +42,7 @@ cd panreas_segmentation
 python train_segmentation.py
 ```
 
-Learned weights are available [here](http://images.infomed-stat.ru/tensorflow/weights.hdf5) due to GitHub limitation on big files.
+Learned weights are available [here](http://fun.conn-me.ru/pancreas_segmentation/weights.hdf5) due to GitHub limitation on big files.
 
 ### Inference
 
