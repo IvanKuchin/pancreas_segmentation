@@ -141,7 +141,7 @@ def __attention_gate(x, gated, apply_batchnorm=True):
 
 
 if __name__ == "__main__":
-    rnd = tf.random.uniform([3, 64, 64, 256, 16])
+    rnd = tf.random.uniform([3, 64, 64, 256, 8])
 
     inp = tf.keras.layers.Input(shape = rnd.shape[1:])
     x_shape = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
