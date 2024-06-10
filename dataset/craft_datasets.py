@@ -185,9 +185,12 @@ def craft_datasets(src_folder, ratio=0.2):
                                     .repeat(3)\
                                     .batch(config.BATCH_SIZE)\
                                     .prefetch(1)
-        total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
 
-        result = list_ds.skip(total_number_of_entries * ratio), list_ds.take(total_number_of_entries * ratio)
+        total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
+        if total_number_of_entries == tf.data.experimental.UNKNOWN_CARDINALITY:
+            total_number_of_entries = len(glob.glob(os.path.join(src_folder, "*_data.npy")))
+
+        result = list_ds.skip(tf.cast(total_number_of_entries * ratio, dtype=tf.int64)), list_ds.take(tf.cast(total_number_of_entries * ratio, dtype=tf.int64))
     else:
         print("can't craft dataset, folder {} doesn't exists".format(src_folder))
 
