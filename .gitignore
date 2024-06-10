@@ -1,0 +1,8 @@
+__pycache__
+logs
+predict
+*.h5
+*.hdf5
+*.nii
+tmp
+.venv
