@@ -194,7 +194,7 @@ def craft_datasets(src_folder, ratio=0.2):
     return result
 
 
-def run_through_data_wo_any_action(ds_train, ds_valid):
+def __run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
     for (data, label) in ds_train:
         print("data shape: ", data.shape, "\tmean/std:", tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
@@ -208,4 +208,4 @@ def run_through_data_wo_any_action(ds_train, ds_valid):
 
 if __name__ == "__main__":
     train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER, 0.2)
-    run_through_data_wo_any_action(train_ds, valid_ds)
+    __run_through_data_wo_any_action(train_ds, valid_ds)
