@@ -9,22 +9,6 @@ from tools.craft_network import craft_network
 import tools.config as config
 
 
-def run_through_data_wo_any_action(ds_train, ds_valid):
-    print("Train ds:")
-    for idx, (data, label) in enumerate(ds_train):
-        print("---", idx)
-        print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
-        print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)))
-        # print(label)
-        # break
-
-    print("Valid ds:")
-    for idx, (data, label) in enumerate(ds_valid):
-        print("---", idx)
-        print("data shape:", data.shape, "\tdata mean:", tf.reduce_mean(data))
-        print("label shape:", label.shape, "\tlabel mean:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)))
-
-
 def get_tensorboard_log_dir():
     root_log_dir = os.path.join(os.curdir, "logs")
     run_id = time.strftime("run_%Y_%m_%d_%H_%M_%S")
