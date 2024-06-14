@@ -23,7 +23,7 @@ class DSV(tf.keras.layers.Layer):
         return x
 
     def compute_output_shape(self, input_shape):
-        return tf.TensorShape(input_shape[:-1] + [2])
+        return tf.TensorShape(input_shape[:-1] + (2,))
 
     def get_config(self):
         base_config = super().get_config()
