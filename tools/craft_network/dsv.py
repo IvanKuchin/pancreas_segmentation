@@ -6,24 +6,27 @@ class DSV(tf.keras.layers.Layer):
         super().__init__(**kwargs)
         self.scale_factor = scale_factor
         self.classes = 2 # 1 - foreground, 1 - background
+        # print("DSV mode constructor (input shape in unknown)")
 
 
     def build(self, inputs):
-        # print("{} {}".format())
+        # print("building model {}".format(inputs))
 
         self.conv = tf.keras.layers.Conv3D(self.classes, kernel_size = 1, padding = "same",
                                             kernel_initializer = "he_uniform")
-
         self.upsample = tf.keras.layers.UpSampling3D([self.scale_factor, self.scale_factor, 1])
 
     def call(self, inputs, **kwargs):
         x = self.conv(inputs)
-        # print("theta_x {}".format(theta_x.shape))
-        x = self.upsample(x)
+
+        if self.scale_factor > 1:
+            x = self.upsample(x)
+
         return x
 
     def compute_output_shape(self, input_shape):
-        return tf.TensorShape(input_shape[:-1] + (2,))
+        (b, h, w, d, _) = input_shape
+        return tf.TensorShape((b, h * self.scale_factor, w * self.scale_factor, d, self.classes))
 
     def get_config(self):
         base_config = super().get_config()
@@ -34,13 +37,11 @@ if __name__ == "__main__":
 
     inp = tf.keras.layers.Input(shape = rnd.shape[1:])
     x_shape = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same")(inp)
-    # gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 1), strides = (1, 1, 1), padding = "same")(inp)
-    # gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 1), strides = (4, 4, 1), padding = "same")(inp)
-
-    # result = attention_gate(x = x, gated = gated, apply_batchnorm = False)
-    result = DSV(scale_factor = 2)(x_shape)
+    dsv_model = DSV(scale_factor = 4)
+    result = dsv_model(x_shape)
 
     model = tf.keras.models.Model(inputs = [inp], outputs = [result])
     outputs = model(rnd)
 
+    print("model.outputs {}".format(model.outputs[0]))
     print("result {}".format(outputs.shape))
