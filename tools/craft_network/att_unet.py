@@ -1,5 +1,12 @@
 import tensorflow as tf
 import os
+import inspect
+import sys
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+parentdir = os.path.dirname(parentdir)
+sys.path.insert(0, parentdir) 
 
 from tools.predict_on_random_data import predict_on_random_data
 from tools.craft_network.att_gate import AttGate
@@ -81,7 +88,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 def main():
     model = craft_network("", apply_batchnorm = False)
 
-    model.summary(line_length = 128)
+    model.summary(line_length = 128, expand_nested = True, show_trainable = True)
     predict_on_random_data(model)
 
 
