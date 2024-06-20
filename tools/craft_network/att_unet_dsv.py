@@ -74,17 +74,14 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
         x = double_conv(_filter, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm)(x)
 
-        if _filter == filters[0]:
-            dsv_outputs.append(tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(x))
-        else:
-            dsv_outputs.append(DSV(filters[-1] // filters[idx + 1])(x))
+        dsv_outputs.append(DSV(filters[-1] // filters[idx + 1])(x))
         # print("{} -> {}".format(x.shape, dsv_outputs[-1].shape))
 
     concat_layer = tf.keras.layers.Concatenate()(dsv_outputs)
-    # print("{}".format(concat_layer.shape))
+    # print("concat layer shape: {}".format(concat_layer.shape))
 
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(concat_layer)
-    output_layer = tf.keras.activations.softmax(output_layer)
+    # output_layer = tf.keras.activations.softmax(output_layer)
 
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
 
