@@ -199,9 +199,9 @@ def craft_datasets(src_folder, ratio=0.2):
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):
     print("Train ds:")
-    for (data, label) in ds_train:
-        print("data shape: ", data.shape, "\tmean/std:", tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
-        print("label shape:", label.shape, "\tmean/std:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
+    for i, (data, label) in enumerate(ds_train):
+        print(i+1, ") data shape: ", data.shape, "\tmean/std:", tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
+        print(i+1, ") label shape:", label.shape, "\tmean/std:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
 
 
     print("Valid ds:")

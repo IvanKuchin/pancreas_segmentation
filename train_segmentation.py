@@ -25,11 +25,11 @@ def __custom_loss(y_true, y_pred):
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
 
-    count_0 = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
-    count_1 = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
+    # count_0 = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
+    # count_1 = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
 
-    background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
-    foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
+    # background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
+    # foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
 
     background_weight = config.BACKGROUND_WEIGHT
     foreground_weight = config.FOREGROUND_WEIGHT
@@ -53,7 +53,7 @@ def main():
     # predict_on_random_data(model)
 
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = config.MONITOR_METRIC,
-                                                       mode = config.MONITOR_MODE, verboose = 2, save_best_only = True)
+                                                       mode = config.MONITOR_MODE, verbose = 2, save_best_only = True)
     csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
     reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
@@ -91,9 +91,44 @@ def main():
             # early_stopping,
             tf.keras.callbacks.TerminateOnNaN()],
         verbose = 1,
-        workers = 2
+        # workers = 2
     )
+
+
+def test_loss():
+    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_pred = np.array([[[[[0.1, 4.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+
+    print("shape of y_true: ", y_true.shape)
+    print("shape of y_pred: ", y_pred.shape)
+
+    loss = __custom_loss(y_true, y_pred)
+    print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_pred = np.array([[[[[0.1, 0.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = __custom_loss(y_true, y_pred)
+    print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_pred = np.array([[[[[4.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = __custom_loss(y_true, y_pred)
+    print("expect 1, predict 0: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_pred = np.array([[[[[0.1, 0.9], [0.1, 4.9]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = __custom_loss(y_true, y_pred)
+    print("expect 0, predict 1: loss {:.4f}".format(loss.numpy()))
 
 
 if __name__ == "__main__":
     main()
+    # test_loss()

@@ -23,7 +23,7 @@ IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
 MONITOR_METRIC = "val_custom_f1"
 MONITOR_MODE = "max"
 
-MODEL_CHECKPOINT = "weights.hdf5"
+MODEL_CHECKPOINT = "weights.keras"
 
 TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/original_npys/"
 
