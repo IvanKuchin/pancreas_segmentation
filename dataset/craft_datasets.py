@@ -78,7 +78,6 @@ def cutout_and_resize_tensor(tensor, top_left, bottom_right):
     # assert tf.rank(t) == 3
     final_shape = tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
     t = __resize_3d_image(t, final_shape)
-    # t = resize_3d.resize_3d_image(t, final_shape)
     return t
 
 
@@ -128,6 +127,7 @@ class Array3d_read_and_resize:
     def __call__(self):
         self.file_list = FileIterator(self.folder)
         for data_file in self.file_list:
+            print("file:", data_file)
             patient_id = fname_to_patientid(data_file)
             data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
 
@@ -212,22 +212,30 @@ def craft_datasets(src_folder, ratio=0.2):
     return result
 
 
-def measure_time(ds):
+class MeasureTime:
+    def __init__(self, ds) -> None:
+        self.iterator = iter(ds)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
         start = time.time()
-        batch = next(ds.as_numpy_iterator())
-        yield (time.time() - start, batch)
+        x = next(self.iterator)
+        latency = time.time() - start
+        return latency, x
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):
     ds_train = ds_train
     for epoch in range(2):
-        for i, (data, label) in enumerate(ds_train):
-            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {0:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
-            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {0:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
+        for i, (t, (data, label)) in enumerate(MeasureTime(ds_train)):
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
 
         print("Valid ds:")
-        for i, (data, label) in enumerate(ds_valid):
-            print(f"valid, epoch/batch {epoch}/{i},\tdata shape: ", data.shape, f"\tmean/std: {tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy():.3f}/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
-            print(f"valid, epoch/batch {epoch}/{i},\tlabel shape:", label.shape, f"\tmean/std: {tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy():.3f}/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
+        for i, (t, (data, label)) in enumerate(MeasureTime(ds_valid)):
+            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
+            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
 
 
 
