@@ -1,4 +1,5 @@
 import glob
+import time
 import tensorflow as tf
 import numpy as np
 import os
@@ -120,14 +121,28 @@ class FileIterator:
         else:
             raise StopIteration
 
-def array3d_read_and_resize():
-    file_list = FileIterator(config.TFRECORD_FOLDER)
-    for data_file in file_list:
-        patient_id = fname_to_patientid(data_file)
-        data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
+class Array3d_read_and_resize:
+    def __init__(self, folder):
+        self.folder = folder
 
-        data, label = random_slice_including_pancreas(data, label)
-        yield data, label
+    def __call__(self):
+        self.file_list = FileIterator(self.folder)
+        for data_file in self.file_list:
+            patient_id = fname_to_patientid(data_file)
+            data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
+
+            data, label = random_slice_including_pancreas(data, label)
+            yield data, label
+
+
+# def array3d_read_and_resize():
+#     file_list = FileIterator(config.TFRECORD_FOLDER)
+#     for data_file in file_list:
+#         patient_id = fname_to_patientid(data_file)
+#         data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
+
+#         data, label = random_slice_including_pancreas(data, label)
+#         yield data, label
     
 
 def crop_to_shape(data, label):
@@ -178,11 +193,11 @@ def craft_datasets(src_folder, ratio=0.2):
                                     # .map(lambda patient_id: read_data_and_label(patient_id, src_folder))
                                     # .map(random_slice_including_pancreas)
 
+        read_and_resize = Array3d_read_and_resize(src_folder)
         list_ds = tf.data.Dataset\
-                                    .from_generator(array3d_read_and_resize, args=[], output_types=(tf.float16, tf.int16), output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))\
+                                    .from_generator(read_and_resize, args=[], output_types=(tf.float16, tf.int16), output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))\
                                     .map(random_flip)\
                                     .map(expand_dimension)\
-                                    .repeat(3)\
                                     .batch(config.BATCH_SIZE)\
                                     .prefetch(1)
 
@@ -190,24 +205,31 @@ def craft_datasets(src_folder, ratio=0.2):
         if total_number_of_entries == tf.data.experimental.UNKNOWN_CARDINALITY:
             total_number_of_entries = len(glob.glob(os.path.join(src_folder, "*_data.npy")))
 
-        result = list_ds.skip(tf.cast(total_number_of_entries * ratio, dtype=tf.int64)), list_ds.take(tf.cast(total_number_of_entries * ratio, dtype=tf.int64))
+        result = list_ds.take(tf.cast(total_number_of_entries * (1-ratio), dtype=tf.int64)), list_ds.skip(tf.cast(total_number_of_entries * (1-ratio), dtype=tf.int64))
     else:
         print("can't craft dataset, folder {} doesn't exists".format(src_folder))
 
     return result
 
 
+def measure_time(ds):
+        start = time.time()
+        batch = next(ds.as_numpy_iterator())
+        yield (time.time() - start, batch)
+
 def __run_through_data_wo_any_action(ds_train, ds_valid):
-    print("Train ds:")
-    for i, (data, label) in enumerate(ds_train):
-        print(i+1, ") data shape: ", data.shape, "\tmean/std:", tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
-        print(i+1, ") label shape:", label.shape, "\tmean/std:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
+    ds_train = ds_train
+    for epoch in range(2):
+        for i, (data, label) in enumerate(ds_train):
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {0:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {0:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
+
+        print("Valid ds:")
+        for i, (data, label) in enumerate(ds_valid):
+            print(f"valid, epoch/batch {epoch}/{i},\tdata shape: ", data.shape, f"\tmean/std: {tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy():.3f}/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
+            print(f"valid, epoch/batch {epoch}/{i},\tlabel shape:", label.shape, f"\tmean/std: {tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy():.3f}/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
 
 
-    print("Valid ds:")
-    for data, label in ds_valid:
-        print("data shape: ", data.shape, "\tmean/std:", tf.reduce_mean(tf.cast(data, dtype=tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(data, dtype=tf.float32)).numpy())
-        print("label shape:", label.shape, "\tmean/std:", tf.reduce_mean(tf.cast(label, dtype = tf.float32)).numpy(), "/", tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy())
 
 if __name__ == "__main__":
     train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER, 0.2)
