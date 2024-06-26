@@ -6,3 +6,5 @@ predict
 *.nii
 tmp
 .venv
+weights.*
+csv_logs
