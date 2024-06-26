@@ -242,6 +242,8 @@ class POMCDataset:
 
     def save_npy(self, patient_id, original_data, original_label, scaled_data, scaled_label):
         result = True
+        scaled_data = np.cast[np.float32](scaled_data)
+        scaled_label = np.cast[np.int8](scaled_label)
         np.save(self.TFRECORD_FOLDER + patient_id + "_data.npy", scaled_data)
         np.save(self.TFRECORD_FOLDER + patient_id + "_label.npy", scaled_label)
 
