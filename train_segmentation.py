@@ -4,7 +4,7 @@ import time
 import os
 
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
-from tools.categorical_metrics import CategoricalMetric, CategoricalF1
+from tools.categorical_metrics import CategoricalMetric, CategoricalF1, CustomCounter, CustomReduceMetric
 from tools.craft_network import craft_network
 import tools.config as config
 
@@ -47,7 +47,6 @@ def __custom_loss(y_true, y_pred):
 
 def main():
     ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER)
-    # run_through_data_wo_any_action(ds_train, ds_valid)
 
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
@@ -77,6 +76,13 @@ def main():
                       CategoricalMetric(tf.keras.metrics.Precision(), name = 'custom_precision'),
                       CategoricalMetric(tf.keras.metrics.Recall(), name = 'custom_recall'),
                       CategoricalF1(name = 'custom_f1'),
+                      CustomReduceMetric(what = "y_true", reduce = "max", name = 'custom_max_y_true'),
+                      CustomReduceMetric(what = "y_pred", reduce = "max", name = 'custom_max_y_pred'),
+                      CustomReduceMetric(what = "y_true", reduce = "min", name = 'custom_min_y_true'),
+                      CustomReduceMetric(what = "y_pred", reduce = "min", name = 'custom_min_y_pred'),
+                      CustomReduceMetric(what = "y_true", reduce = "sum", name = 'custom_sum_y_true'),
+                      CustomReduceMetric(what = "y_pred", reduce = "sum", name = 'custom_sum_y_pred'),
+                      CustomCounter(name = 'custom_counter'),
                   ])
 
     history = model.fit(
