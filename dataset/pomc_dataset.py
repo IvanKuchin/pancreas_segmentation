@@ -240,19 +240,29 @@ class POMCDataset:
 
         return result
 
-    def save_npy(self, patient_id, original_data, original_label, scaled_data, scaled_label):
+    def save_npy(self, subfolder: str, patient_id:str, original_data, original_label, scaled_data, scaled_label):
         result = True
         scaled_data = np.cast[np.float32](scaled_data)
         scaled_label = np.cast[np.int8](scaled_label)
-        np.save(self.TFRECORD_FOLDER + patient_id + "_data.npy", scaled_data)
-        np.save(self.TFRECORD_FOLDER + patient_id + "_label.npy", scaled_label)
+        np.save(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + "_data.npy"), scaled_data)
+        np.save(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + "_label.npy"), scaled_label)
 
         return result
 
-    def pickle_src_data(self):
+    def pickle_src_data(self, ratio=0.2):
+        if not os.path.exists(self.TFRECORD_FOLDER):
+            print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
+            return
+        if not os.path.exists(os.path.join(self.TFRECORD_FOLDER, "train")):
+            os.makedirs(os.path.join(self.TFRECORD_FOLDER, "train"))
+        if not os.path.exists(os.path.join(self.TFRECORD_FOLDER, "valid")):
+            os.makedirs(os.path.join(self.TFRECORD_FOLDER, "valid"))
+
         folder_list = glob.glob(os.path.join(self.patients_src_folder, "*"))
 
         for folder in folder_list:
+            subfolder = "train" if np.random.rand() > ratio else "valid"
+
             patient_id = self.get_patient_id_from_folder(folder)
 
             if len(patient_id) == 0:
@@ -296,7 +306,7 @@ class POMCDataset:
                 print("ERROR: data or label failed sanity check")
                 continue
 
-            if self.save_npy(patient_id, src_data, label_data, scaled_src_data, scaled_label_data) == False:
+            if self.save_npy(subfolder, patient_id, src_data, label_data, scaled_src_data, scaled_label_data) == False:
                 print("ERROR: can't save TFRecord patient id:", patient_id)
 
 

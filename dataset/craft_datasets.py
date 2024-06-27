@@ -17,33 +17,32 @@ import tools.config as config
 DEBUG_DATALOADER = False
 
 
-def fname_to_patientid(fname_src):
+def fname_to_patientid(fname_src:str):
     if DEBUG_DATALOADER:
         print("==========", fname_src)
-    fname = tf.strings.split(fname_src, sep = os.path.sep)[-1]
-    patient_id = tf.strings.split(fname, sep = "_data")[0]
+    fname = fname_src.split(os.path.sep)[-1]
+    patient_id = fname.split(sep = "_data")[0]
     return patient_id
 
 
-def py_read_data_and_label(data_fname, data_label):
+def py_read_data_and_label(data_fname:str, data_label:str):
     if DEBUG_DATALOADER:
-        print("data_fname:", data_fname.numpy(), "data_label:", data_label.numpy())
-    data_array = np.load(data_fname.numpy())
-    label_array = np.load(data_label.numpy())
+        print("data_fname:", data_fname, "data_label:", data_label)
+    data_array = np.load(data_fname)
+    label_array = np.load(data_label)
     return (data_array.astype(np.float32), label_array.astype(np.int32))
     # return data_array.astype(np.float32)
 
 
-def read_data_and_label(patient_id, src_folder):
+def read_data_and_label(patient_id:str, src_folder:str):
     """
     :type src_folder: basestring
     """
     if DEBUG_DATALOADER:
         print("src_folder:", src_folder, "patient_id:", patient_id)
-    data_fname = src_folder + patient_id + "_data.npy"
-    label_fname = src_folder + patient_id + "_label.npy"
-    data_array, label_array = tf.py_function(py_read_data_and_label, [data_fname, label_fname],
-                                             Tout = (tf.float32, tf.int32))
+    data_fname  = os.path.join(src_folder, patient_id + "_data.npy")
+    label_fname = os.path.join(src_folder, patient_id + "_label.npy")
+    data_array, label_array = py_read_data_and_label(data_fname, label_fname) #, Tout = (tf.float32, tf.int32))
 
     return data_array, label_array
 
@@ -127,9 +126,9 @@ class Array3d_read_and_resize:
     def __call__(self):
         self.file_list = FileIterator(self.folder)
         for data_file in self.file_list:
-            print("file:", data_file)
+            # print("file:", data_file)
             patient_id = fname_to_patientid(data_file)
-            data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
+            data, label = read_data_and_label(patient_id, self.folder)
 
             data, label = random_slice_including_pancreas(data, label)
             yield data, label
@@ -183,8 +182,8 @@ def expand_dimension(data, label):
     return data, label
 
 
-def craft_datasets(src_folder, ratio=0.2):
-    result = None, None
+def craft_datasets(src_folder):
+    result = None
 
     if os.path.isdir(src_folder):
         # d, l = array3d_read_and_resize()
@@ -199,13 +198,13 @@ def craft_datasets(src_folder, ratio=0.2):
                                     .map(random_flip)\
                                     .map(expand_dimension)\
                                     .batch(config.BATCH_SIZE)\
-                                    .prefetch(1)
+                                    # .prefetch(1)
 
-        total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
-        if total_number_of_entries == tf.data.experimental.UNKNOWN_CARDINALITY:
-            total_number_of_entries = len(glob.glob(os.path.join(src_folder, "*_data.npy")))
+        # total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
+        # if total_number_of_entries == tf.data.experimental.UNKNOWN_CARDINALITY:
+        #     total_number_of_entries = len(glob.glob(os.path.join(src_folder, "*_data.npy")))
 
-        result = list_ds.take(tf.cast(total_number_of_entries * (1-ratio), dtype=tf.int64)), list_ds.skip(tf.cast(total_number_of_entries * (1-ratio), dtype=tf.int64))
+        result = list_ds
     else:
         print("can't craft dataset, folder {} doesn't exists".format(src_folder))
 
@@ -226,7 +225,6 @@ class MeasureTime:
         return latency, x
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):
-    ds_train = ds_train
     for epoch in range(2):
         for i, (t, (data, label)) in enumerate(MeasureTime(ds_train)):
             print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
@@ -240,5 +238,6 @@ def __run_through_data_wo_any_action(ds_train, ds_valid):
 
 
 if __name__ == "__main__":
-    train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER, 0.2)
+    train_ds = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
+    valid_ds = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
     __run_through_data_wo_any_action(train_ds, valid_ds)
