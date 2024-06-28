@@ -87,6 +87,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 
     if checkpoint_file and os.path.exists(checkpoint_file):
         print("Loading weights from checkpoint ", checkpoint_file)
+        model (tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
         model.load_weights(checkpoint_file)
     else:
         print("Checkpoint file {} not found".format(checkpoint_file))
@@ -94,11 +95,43 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
     return model
 
 
-def main():
-    model = craft_network("", apply_batchnorm = False)
+def layer_info(layer):
+    theta = layer.theta
+    weights = theta.get_weights()
+    print("Layer name: ", layer.name)
+    # print("Layer input shape: ", layer.input_shape)
+    # print("Layer output shape: ", layer.output_shape)
+    print("Layer config: ", layer.get_config())
 
-    model.summary(line_length = 128)
-    predict_on_random_data(model)
+
+def main():
+    import numpy as np 
+    
+    model_original = craft_network("", apply_batchnorm = False)
+    model_original.summary(line_length = 128)
+    model_original.save_weights("test.weights.h5")
+
+    y_original = model_original(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    print("Model output shape: ", y_original.shape)
+
+    model_reconstructed = craft_network("", apply_batchnorm = False)
+    y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    print("diff before load_weights: ", np.sum(y_reconstructed - y_original))
+    model_reconstructed.load_weights("test.weights.h5")
+    y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    print("diff after load_weights: ", np.sum(y_reconstructed - y_original))
+
+
+    # model_reconstructed = craft_network("test.weights.h5", apply_batchnorm = False)
+    # y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    # print("diff after load_weights: ", np.sum(y_reconstructed - y_original))
+    
+    # model.load_weights("test.weights.h5")
+    # model.save("custom.keras")
+    # check = tf.keras.models.load_model("custom.keras")
+
+
+    # predict_on_random_data(model)
 
 
 if __name__ == "__main__":
