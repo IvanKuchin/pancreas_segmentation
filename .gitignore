@@ -2,6 +2,7 @@ __pycache__
 logs
 predict
 *.h5
+*.keras
 *.hdf5
 *.nii
 tmp
