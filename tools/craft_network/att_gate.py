@@ -24,10 +24,10 @@ class AttGate(tf.keras.layers.Layer):
         # print("{} {}".format())
 
         self.theta = tf.keras.layers.Conv3D(__inter_filters, kernel_size = subsample_factor, strides = subsample_factor, padding = "same",
-                                            use_bias = False, kernel_initializer = "he_uniform", name = "theta")
+                                            use_bias = False, kernel_initializer = "he_uniform", name = "att_gate_theta")
 
         self.phi = tf.keras.layers.Conv3D(__inter_filters, kernel_size = 1, strides = 1, padding = "same",
-                                          kernel_initializer = "he_uniform", name = "phi")
+                                          kernel_initializer = "he_uniform", name = "att_gate_phi")
 
         self.phi_upsample = tf.keras.layers.UpSampling3D([
             x_shape[1] // subsample_factor[0] // gated_shape[1],
@@ -35,17 +35,17 @@ class AttGate(tf.keras.layers.Layer):
             x_shape[3] // subsample_factor[2] // gated_shape[3]
         ])
 
-        self.add_g_x = tf.keras.layers.Add(name = "addition")
+        self.add_g_x = tf.keras.layers.Add(name = "att_gate_addition")
 
         self.psi = tf.keras.layers.Conv3D(filters = 1, kernel_size = 1, strides = 1, padding = "same",
-                                          kernel_initializer = "he_uniform", name = "psi")
+                                          kernel_initializer = "he_uniform", name = "att_gate_psi")
 
         self.psi_upsample = tf.keras.layers.UpSampling3D(subsample_factor)
 
-        self.multiplication_to_att = tf.keras.layers.Multiply(name = "multiplication")
+        self.multiplication_to_att = tf.keras.layers.Multiply(name = "att_gate_multiplication")
 
         self.W = tf.keras.layers.Conv3D(filters = x_shape[-1], kernel_size = 1, strides = 1, padding = "same",
-                                        kernel_initializer = "he_uniform", name = "W")
+                                        kernel_initializer = "he_uniform", name = "att_gate_W")
 
     def call(self, inputs):
         x, gated = inputs
