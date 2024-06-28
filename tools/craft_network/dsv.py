@@ -13,8 +13,8 @@ class DSV(tf.keras.layers.Layer):
         # print("building model {}".format(inputs))
 
         self.conv = tf.keras.layers.Conv3D(self.classes, kernel_size = 1, padding = "same",
-                                            kernel_initializer = "he_uniform")
-        self.upsample = tf.keras.layers.UpSampling3D([self.scale_factor, self.scale_factor, 1])
+                                            kernel_initializer = "he_uniform", name="dsv_conv")
+        self.upsample = tf.keras.layers.UpSampling3D([self.scale_factor, self.scale_factor, 1], name="dsv_upsample")
 
     def call(self, inputs, **kwargs):
         x = self.conv(inputs)
@@ -42,6 +42,8 @@ if __name__ == "__main__":
 
     model = tf.keras.models.Model(inputs = [inp], outputs = [result])
     outputs = model(rnd)
+
+    model.summary()
 
     print("model.outputs {}".format(model.outputs[0]))
     print("result {}".format(outputs.shape))
