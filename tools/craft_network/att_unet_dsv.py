@@ -68,7 +68,6 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
             # --- don't gate signal due to no useful features at top level
             gated_skip = skip_conn
         else:
-            # gated_skip = attention_gate(skip_conn, gating_base, apply_batchnorm = apply_batchnorm)
             gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, gating_base))
 
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
@@ -87,7 +86,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 
     if checkpoint_file and os.path.exists(checkpoint_file):
         print("Loading weights from checkpoint ", checkpoint_file)
-        model (tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+        model(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
         model.load_weights(checkpoint_file)
     else:
         print("Checkpoint file {} not found".format(checkpoint_file))
