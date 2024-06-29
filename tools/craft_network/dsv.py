@@ -24,9 +24,9 @@ class DSV(tf.keras.layers.Layer):
 
         return x
 
-    def compute_output_shape(self, input_shape):
-        (b, h, w, d, _) = input_shape
-        return tf.TensorShape((b, h * self.scale_factor, w * self.scale_factor, d, self.classes))
+    # def compute_output_shape(self, input_shape):
+    #     (b, h, w, d, _) = input_shape
+    #     return tf.TensorShape((b, h * self.scale_factor, w * self.scale_factor, d, self.classes))
 
     def get_config(self):
         base_config = super().get_config()

@@ -79,8 +79,8 @@ class AttGate(tf.keras.layers.Layer):
         # return tf.keras.models.Model(inputs = [input_x, input_g], outputs = [__result])
         return __result
 
-    def compute_output_shape(self, input_shape):
-        return input_shape[0]
+    # def compute_output_shape(self, input_shape):
+    #     return input_shape[0]
 
     def get_config(self):
         base_config = super().get_config()
