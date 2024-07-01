@@ -108,14 +108,15 @@ def main():
     
     model_original = craft_network("", apply_batchnorm = False)
     model_original.summary(line_length = 128)
+    model_original.save("test.keras")
     model_original.save_weights("test.weights.h5")
 
     y_original = model_original(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
     print("Model output shape: ", y_original.shape)
 
-    model_reconstructed = craft_network("", apply_batchnorm = False)
+    model_reconstructed = craft_network("test.keras", apply_batchnorm = False)
     y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
-    print("diff before load_weights: ", np.sum(y_reconstructed - y_original))
+    print("diff after crafting the model: ", np.sum(y_reconstructed - y_original))
     model_reconstructed.load_weights("test.weights.h5")
     y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
     print("diff after load_weights: ", np.sum(y_reconstructed - y_original))

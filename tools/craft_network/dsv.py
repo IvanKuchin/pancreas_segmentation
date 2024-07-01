@@ -24,6 +24,10 @@ class DSV(tf.keras.layers.Layer):
 
         return x
 
+    ##########################
+    # ATTENTION !!! 
+    # having this function will cause the model to fail to load weights from file
+    ##########################
     # def compute_output_shape(self, input_shape):
     #     (b, h, w, d, _) = input_shape
     #     return tf.TensorShape((b, h * self.scale_factor, w * self.scale_factor, d, self.classes))

@@ -79,6 +79,10 @@ class AttGate(tf.keras.layers.Layer):
         # return tf.keras.models.Model(inputs = [input_x, input_g], outputs = [__result])
         return __result
 
+    ##########################
+    # ATTENTION !!! 
+    # having this function will cause the model to fail to load weights from file
+    ##########################
     # def compute_output_shape(self, input_shape):
     #     return input_shape[0]
 
