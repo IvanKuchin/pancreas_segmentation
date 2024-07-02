@@ -1,6 +1,14 @@
-import unittest
-from tools import resize_3d
 import tensorflow as tf
+import unittest
+import os
+import sys
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+from tools import resize_3d
 
 class Resize_3d(unittest.TestCase):
     '''Unit test to resize_3d function'''

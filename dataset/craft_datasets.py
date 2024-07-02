@@ -47,24 +47,6 @@ def read_data_and_label(patient_id:str, src_folder:str):
     return data_array, label_array
 
 
-def __resize_along_axis2(tensor: tf.Tensor, new_size, axis_along):
-    # print("tensor shape: ", tensor.shape)
-    # print("axis:", axis_along)
-    unstacked = [tf.expand_dims(tf.expand_dims(_, 0), -1) for _ in tf.unstack(tensor, axis = axis_along)]
-    unstacked = [tf.image.resize(_, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR) for _ in unstacked]
-    unstacked = tf.squeeze(unstacked)
-    result = tf.stack(unstacked, axis = axis_along)
-    return result
-
-
-def __resize_3d_image(image, dimensions: tf.TensorSpec(shape=[3,], dtype=tf.int32)):
-    assert dimensions.shape == (3,)
-    zoomed_img = __resize_along_axis2(image, dimensions[:2], 2)
-    zoomed_img = __resize_along_axis2(zoomed_img, dimensions[1:], 0)
-    return zoomed_img
-
-
-
 # cutout and resize 3-d tensor with shape [w,h,d]
 # 1) cut overheads off from top_left to bottom_right + 1
 #    top_left and bottom_right will be present in the final shape
@@ -76,7 +58,7 @@ def cutout_and_resize_tensor(tensor, top_left, bottom_right):
     t = tf.squeeze(t)
     # assert tf.rank(t) == 3
     final_shape = tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
-    t = __resize_3d_image(t, final_shape)
+    t = resize_3d.resize_3d_image(t, final_shape)
     return t
 
 
