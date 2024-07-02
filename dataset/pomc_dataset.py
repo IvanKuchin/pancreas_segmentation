@@ -22,7 +22,7 @@ AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 +
                               dtype = tf.int32).numpy()
 
 PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/test"
-LABELS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/test"
+LABELS_SRC_FOLDER   = "c:/Users/ikuchin/Downloads/pancreas_data/test"
 
 DEBUG = True
 
