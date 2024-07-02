@@ -13,8 +13,10 @@ BATCH_NORM = False
 BATCH_SIZE = 1
 BATCH_NORM_MOMENTUM = 0.8
 
-PANCREAS_MIN_HU = -100024
-PANCREAS_MAX_HU =  100024
+# HU range for pancreas in CT scans from 30 to 400
+# https://radiopaedia.org/articles/windowing-ct?lang=us
+PANCREAS_MIN_HU = -1024
+PANCREAS_MAX_HU =  4096
 
 IMAGE_DIMENSION_X = 160
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
