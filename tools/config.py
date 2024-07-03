@@ -27,8 +27,15 @@ MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"
 
-TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/dataset/"
-
 IMAGE_ORIGINAL_DIMENSION_X = 512
 IMAGE_ORIGINAL_DIMENSION_Y = IMAGE_ORIGINAL_DIMENSION_X
 IMAGE_ORIGINAL_DIMENSION_Z = IMAGE_ORIGINAL_DIMENSION_X
+
+# Dataset used for training
+# consists of pickle files of 3d numpy arrays
+TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/dataset/"
+
+# DataSet recevied from POMC
+# consists of dicom and nrrd files
+POMC_PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"
+POMC_LABELS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"

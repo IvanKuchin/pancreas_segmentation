@@ -21,8 +21,8 @@ AUGMENT_SCALE_FACTOR = 0.1
 AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
                               dtype = tf.int32).numpy()
 
-PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"
-LABELS_SRC_FOLDER   = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"
+PATIENTS_SRC_FOLDER = config.POMC_PATIENTS_SRC_FOLDER
+LABELS_SRC_FOLDER   = config.POMC_LABELS_SRC_FOLDER
 
 DEBUG = True
 
