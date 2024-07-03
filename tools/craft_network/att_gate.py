@@ -46,6 +46,8 @@ class AttGate(tf.keras.layers.Layer):
 
         self.W = tf.keras.layers.Conv3D(filters = x_shape[-1], kernel_size = 1, strides = 1, padding = "same",
                                         kernel_initializer = "he_uniform", name = "att_gate_W")
+        
+        self.bn = tf.keras.layers.BatchNormalization()
 
     def call(self, inputs):
         x, gated = inputs
@@ -74,7 +76,7 @@ class AttGate(tf.keras.layers.Layer):
         __result = self.W(__mul)
 
         if self.apply_batchnorm:
-            __result = tf.keras.layers.BatchNormalization()(__result)
+            __result = self.bn(__result)
 
         # return tf.keras.models.Model(inputs = [input_x, input_g], outputs = [__result])
         return __result
