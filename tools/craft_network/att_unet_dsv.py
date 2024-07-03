@@ -115,23 +115,14 @@ def main():
     print("Model output shape: ", y_original.shape)
 
     model_reconstructed = craft_network("test.keras", apply_batchnorm = True)
-    y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    y_reconstructed = model_reconstructed.predict(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
     print("diff after crafting the model: ", np.sum(y_reconstructed - y_original))
     model_reconstructed.load_weights("test.weights.h5")
-    y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
+    y_reconstructed = model_reconstructed.predict(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
     print("diff after load_weights: ", np.sum(y_reconstructed - y_original))
 
-
-    # model_reconstructed = craft_network("test.weights.h5", apply_batchnorm = False)
-    # y_reconstructed = model_reconstructed(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
-    # print("diff after load_weights: ", np.sum(y_reconstructed - y_original))
-    
-    # model.load_weights("test.weights.h5")
-    # model.save("custom.keras")
-    # check = tf.keras.models.load_model("custom.keras")
-
-
-    # predict_on_random_data(model)
+    os.remove("test.weights.h5")
+    os.remove("test.keras")
 
 
 if __name__ == "__main__":
