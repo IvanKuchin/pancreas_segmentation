@@ -43,6 +43,17 @@ class Resize_3d(unittest.TestCase):
 
         self.assertEqual(result, True, msg = "resize triple and back failed")
 
+    def test_resize_triple_and_back_xl(self):
+        cube_size = 64
+        arr2 = tf.random.uniform([cube_size, cube_size, cube_size], dtype = tf.float32)
+
+        arr3 = resize_3d.resize_3d_image(arr2, tf.constant([cube_size*3, cube_size*3, cube_size*3]))
+        arr4 = resize_3d.resize_3d_image(arr3, tf.constant([cube_size, cube_size, cube_size]))
+
+        result = tf.logical_not(tf.cast(tf.reshape(arr2-arr4, [-1]), dtype=tf.bool)).numpy().all()
+
+        self.assertEqual(result, True, msg = "resize triple and back failed")
+
 
 if __name__ == "__main__":
     unittest.main()

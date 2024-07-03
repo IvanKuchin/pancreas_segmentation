@@ -49,6 +49,5 @@ class test_label_affine(unittest.TestCase):
             analysis_result = self.analyze_rotation(affine)
             self.assertEqual(True, analysis_result, msg = "rotation is non-zero in file {}".format(file_name))
 
-
 if __name__ == "__main__":
     unittest.main()
