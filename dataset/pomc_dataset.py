@@ -16,10 +16,10 @@ sys.path.insert(0, parentdir)
 from tools import resize_3d
 import tools.config as config
 
-INPUT_DIMS = np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
-AUGMENT_SCALE_FACTOR = 0.1
-AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
-                              dtype = tf.int32).numpy()
+# INPUT_DIMS = np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
+# AUGMENT_SCALE_FACTOR = 0.1
+# AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
+#                               dtype = tf.int32).numpy()
 
 PATIENTS_SRC_FOLDER = config.POMC_PATIENTS_SRC_FOLDER
 LABELS_SRC_FOLDER   = config.POMC_LABELS_SRC_FOLDER
