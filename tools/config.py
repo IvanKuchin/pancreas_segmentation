@@ -27,7 +27,7 @@ MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"
 
-TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/original_npys/"
+TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/dataset/"
 
 IMAGE_ORIGINAL_DIMENSION_X = 512
 IMAGE_ORIGINAL_DIMENSION_Y = IMAGE_ORIGINAL_DIMENSION_X
