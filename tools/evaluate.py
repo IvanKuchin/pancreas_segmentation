@@ -3,7 +3,7 @@ from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 
 from dataset.craft_datasets import craft_datasets
 from tools.craft_network import craft_network
-import tools.config as config
+import config as config
 
 def __print_stat(data, title=""):
     print('-' * 100)

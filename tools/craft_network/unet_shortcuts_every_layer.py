@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 
-import tools.config as config
+import config as config
 from tools.craft_network.att_gate import AttGate
 
 

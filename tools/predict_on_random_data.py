@@ -1,6 +1,6 @@
 import time
 import tensorflow as tf
-import tools.config as config
+import config as config
 import numpy as np
 
 

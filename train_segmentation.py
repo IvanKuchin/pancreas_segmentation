@@ -6,7 +6,7 @@ import os
 from dataset.craft_datasets import craft_datasets, py_read_data_and_label, crop_to_shape
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1, CustomCounter, CustomReduceMetric
 from tools.craft_network import craft_network
-import tools.config as config
+import config as config
 
 
 def get_tensorboard_log_dir():

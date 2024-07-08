@@ -6,7 +6,7 @@ from tools import resize_3d
 import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
-import tools.config as config
+import config as config
 
 
 class Predict:
