@@ -11,7 +11,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from tools import resize_3d
-import tools.config as config
+import config as config
 
 
 DEBUG_DATALOADER = False

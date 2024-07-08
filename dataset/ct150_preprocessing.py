@@ -6,7 +6,7 @@ import os
 import re
 import nibabel
 from tools import resize_3d
-import tools.config as config
+import config as config
 
 PATIENTS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/data/"
 LABELS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/labels/"
