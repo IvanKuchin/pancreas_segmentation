@@ -82,9 +82,7 @@ class POMCDataset:
 
     def get_dicom_data(self, folder):
         result = np.array([])
-        # *dcm instead of *.dcm let us to read files like this
-        # 1-1_dcm and 1-2.dcm
-        file_list = glob.glob(os.path.join(folder, "*dcm"))
+        file_list = glob.glob(os.path.join(folder, "*.dcm"))
         if len(file_list):
             result, metadata = self.read_dicom_data_from_files(file_list)
             if result.shape[0]:
@@ -102,7 +100,7 @@ class POMCDataset:
 
     def get_nrrd_data(self, folder):
         result = np.array([])
-        file_list = glob.glob(os.path.join(folder, "*nrrd"))
+        file_list = glob.glob(os.path.join(folder, "*.nrrd"))
         if len(file_list):
             result, metadata = self.read_nrrd_data_from_files(file_list)
             if result.shape[0]:
