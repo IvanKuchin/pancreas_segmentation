@@ -122,8 +122,8 @@ class POMCDataset:
     def _points_close_to_each_other(self, point1, point2):
         return np.linalg.norm(np.array(point1) - np.array(point2)) < 1
     
-    def _body_up_side_down(self, min):
-        return min[2] > 0
+    # def _body_up_side_down(self, min):
+    #     return min[2] > 0
 
     def consistency_check(self, data, label, data_metadata, label_metadata):
         if data.shape[0] == 0:
@@ -136,7 +136,7 @@ class POMCDataset:
         
         if data.shape != label.shape:
             print("ERROR: data shape(", data.shape, ") is not equal to the label shape(", label.shape, ")")
-            return False
+            # return False
 
         if not self._point_inside_box(data_metadata["min"], data_metadata["max"], label_metadata["space origin"]):
             print("ERROR: label space origin(", label_metadata["space origin"], ") is outside the data box(", data_metadata["min"], data_metadata["max"], ")")
@@ -146,9 +146,13 @@ class POMCDataset:
             print("ERROR: label space origin(", label_metadata["space origin"], ") is not close to the data first slice origin(", data_metadata["min"], ")")
             return False
         
-        if self._body_up_side_down(data_metadata["min"]):
-            print("ERROR: data is upside down")
-            return False
+        ##############################
+        # Thos is not relevant check #
+        ##############################
+        # print("\tDICOM min/max coordinates:", data_metadata["min"], data_metadata["max"])
+        # if self._body_up_side_down(data_metadata["min"]):
+        #     print("ERROR: data is upside down")
+        #     return False
         
         return True
 
