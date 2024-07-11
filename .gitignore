@@ -9,3 +9,4 @@ tmp
 .venv
 weights.*
 csv_logs
+fixes.txt
