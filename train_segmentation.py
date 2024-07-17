@@ -49,7 +49,7 @@ def main():
     ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
     ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
 
-    ds_train = ds_train.prefetch(1).repeat(2)
+    ds_train = ds_train.prefetch(1).repeat(config.TRAIN_PASSES_PER_VALIDATION)
 
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
