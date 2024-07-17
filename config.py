@@ -13,10 +13,12 @@ BATCH_NORM = True
 BATCH_SIZE = 1
 BATCH_NORM_MOMENTUM = 0.8
 
-# HU range for pancreas in CT scans from 30 to 400
+# Option 1) HU range for pancreas in CT scans from 30 to 400
 # https://radiopaedia.org/articles/windowing-ct?lang=us
-PANCREAS_MIN_HU = -1024
-PANCREAS_MAX_HU =  4096
+# Option 2) 3D Slicer preset for abdominal CT
+# W/L: 350/40, which makes the pancreas range from -310 to 390
+PANCREAS_MIN_HU = -524
+PANCREAS_MAX_HU =  1024
 
 IMAGE_DIMENSION_X = 160
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
