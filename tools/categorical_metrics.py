@@ -34,13 +34,13 @@ class CustomReduceMetric(tf.keras.metrics.Metric):
             subj = tf.argmax(y_pred, axis = -1)
 
         if self.reduce == "max":
-            self.m.assign(tf.reduce_max(subj))
+            self.m.assign(tf.reduce_max(tf.cast(subj, dtype=tf.float32)))
         elif self.reduce == "min":
-            self.m.assign(tf.reduce_min(subj))
+            self.m.assign(tf.reduce_min(tf.cast(subj, dtype=tf.float32)))
         elif self.reduce == "mean":
-            self.m.assign(tf.reduce_mean(subj))
+            self.m.assign(tf.reduce_mean(tf.cast(subj, dtype=tf.float32)))
         elif self.reduce == "sum":
-            self.m.assign(tf.reduce_sum(subj))
+            self.m.assign(tf.reduce_sum(tf.cast(subj, dtype=tf.float32)))
 
     def result(self):
         return self.m
