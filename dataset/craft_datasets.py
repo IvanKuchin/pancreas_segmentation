@@ -15,7 +15,7 @@ import config as config
 
 
 DEBUG_DATALOADER = False
-
+DEBUG_DATA_LOADING_PERFORMANCE = False
 
 def fname_to_patientid(fname_src:str):
     if DEBUG_DATALOADER:
@@ -25,13 +25,14 @@ def fname_to_patientid(fname_src:str):
     return patient_id
 
 
-def py_read_data_and_label(data_fname:str, data_label:str):
+def py_read_data_and_label(data_fname:str):
     if DEBUG_DATALOADER:
-        print("data_fname:", data_fname, "data_label:", data_label)
-    data_array = np.load(data_fname)
-    label_array = np.load(data_label)
-    return (data_array.astype(np.float32), label_array.astype(np.int32))
-    # return data_array.astype(np.float32)
+        print("data_fname:", data_fname)
+    with np.load(data_fname) as content:
+        data_label = content["arr_0"]
+    data_array = data_label[0]
+    label_array = data_label[1]
+    return (tf.convert_to_tensor(data_array, dtype=tf.float32), tf.convert_to_tensor(label_array, dtype=tf.int32))
 
 
 def read_data_and_label(patient_id:str, src_folder:str):
@@ -40,9 +41,8 @@ def read_data_and_label(patient_id:str, src_folder:str):
     """
     if DEBUG_DATALOADER:
         print("src_folder:", src_folder, "patient_id:", patient_id)
-    data_fname  = os.path.join(src_folder, patient_id + "_data.npy")
-    label_fname = os.path.join(src_folder, patient_id + "_label.npy")
-    data_array, label_array = py_read_data_and_label(data_fname, label_fname) #, Tout = (tf.float32, tf.int32))
+    data_fname  = os.path.join(src_folder, patient_id)
+    data_array, label_array = py_read_data_and_label(data_fname) #, Tout = (tf.float32, tf.int32))
 
     return data_array, label_array
 
@@ -63,12 +63,15 @@ def cutout_and_resize_tensor(tensor, top_left, bottom_right):
 
 
 def random_slice_including_pancreas(data, label):
+
+    start_prep = time.time()
     top_left_label_position = tf.reduce_min(tf.where(label == 1), axis=0)
     bottom_right_label_position = tf.reduce_max(tf.where(label == 1), axis=0)
     random_offset_top_left = tf.random.uniform(shape = [3], minval = [0.0, 0.0, 0.0], maxval = tf.cast(top_left_label_position, dtype=tf.float32))
     random_offset_top_left = tf.cast(random_offset_top_left, dtype = tf.int32)
     random_offset_bottom_right = tf.random.uniform(shape = [3], minval = tf.cast(bottom_right_label_position, dtype=tf.float32), maxval = tf.cast(tf.shape(data), dtype=tf.float32))
     random_offset_bottom_right = tf.cast(random_offset_bottom_right, dtype = tf.int32)
+    finish_prep = time.time()
 
     if DEBUG_DATALOADER:
         print("\ttop_left_label_position:", top_left_label_position.numpy(), "bottom_right_label_position:", bottom_right_label_position.numpy())
@@ -76,8 +79,16 @@ def random_slice_including_pancreas(data, label):
         print("\trandom_offset_top_left:", random_offset_top_left.numpy(), "random_offset_bottom_right:", random_offset_bottom_right.numpy())
         print("\tslice shape:", (random_offset_bottom_right - random_offset_top_left + 1).numpy())
 
+    start_data = time.time()
     _data = cutout_and_resize_tensor(data, random_offset_top_left, random_offset_bottom_right)
+    finish_data = time.time()
+
+    start_label = time.time()
     _label = cutout_and_resize_tensor(label, random_offset_top_left, random_offset_bottom_right)
+    finish_label = time.time()
+
+    if DEBUG_DATA_LOADING_PERFORMANCE:
+        print(f"\tDATA_LOADING_PERFORMANCE: prep: {finish_prep - start_prep:.1f} data: {finish_data - start_data:.1f} label: {finish_label - start_label:.1f}")
 
     if DEBUG_DATALOADER:
         print("\t_data shape:", _data.shape, "_label shape:", _label.shape)
@@ -87,7 +98,7 @@ def random_slice_including_pancreas(data, label):
 class FileIterator:
     def __init__(self, folder):
         self.folder = folder
-        self.file_list = glob.glob(os.path.join(folder, "*_data.npy"))
+        self.file_list = glob.glob(os.path.join(folder, "*.npz"))
         self.index = 0
 
     def __iter__(self):
@@ -110,9 +121,18 @@ class Array3d_read_and_resize:
         for data_file in self.file_list:
             # print("file:", data_file)
             patient_id = fname_to_patientid(data_file)
-            data, label = read_data_and_label(patient_id, self.folder)
 
+            start_reading = time.time()
+            data, label = read_data_and_label(patient_id, self.folder)
+            finish_reading = time.time()
+
+            start_resize = time.time()
             data, label = random_slice_including_pancreas(data, label)
+            finish_resize = time.time()
+
+            if DEBUG_DATA_LOADING_PERFORMANCE:
+                print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f}")
+
             yield data, label
 
 
