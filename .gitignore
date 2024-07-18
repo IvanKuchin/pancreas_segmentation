@@ -1,6 +1,7 @@
 __pycache__
 logs
 predict
+predict.*
 *.h5
 *.keras
 *.hdf5
