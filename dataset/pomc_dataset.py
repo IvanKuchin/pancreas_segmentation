@@ -248,8 +248,7 @@ class POMCDataset:
         result = True
         scaled_data = np.cast[np.float32](scaled_data)
         scaled_label = np.cast[np.int8](scaled_label)
-        np.save(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + "_data.npy"), scaled_data)
-        np.save(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + "_label.npy"), scaled_label)
+        np.savez_compressed(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + ".npz"), [scaled_data, scaled_label])
 
         return result
 
