@@ -2,7 +2,6 @@ import glob
 import time
 import tensorflow as tf
 import numpy as np
-import borders
 import os
 import sys
 import inspect
@@ -13,6 +12,7 @@ sys.path.insert(0, parentdir)
 
 from tools import resize_3d
 import config as config
+from dataset import borders
 
 
 DEBUG_DATALOADER = False
