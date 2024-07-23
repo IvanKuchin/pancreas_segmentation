@@ -16,7 +16,7 @@ import config as config
 
 
 DEBUG_DATALOADER = False
-DEBUG_DATA_LOADING_PERFORMANCE = True
+DEBUG_DATA_LOADING_PERFORMANCE = False
 
 def fname_to_patientid(fname_src:str):
     if DEBUG_DATALOADER:
