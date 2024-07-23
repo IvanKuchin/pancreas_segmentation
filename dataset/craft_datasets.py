@@ -2,6 +2,7 @@ import glob
 import time
 import tensorflow as tf
 import numpy as np
+import borders
 import os
 import sys
 import inspect
@@ -15,7 +16,7 @@ import config as config
 
 
 DEBUG_DATALOADER = False
-DEBUG_DATA_LOADING_PERFORMANCE = False
+DEBUG_DATA_LOADING_PERFORMANCE = True
 
 def fname_to_patientid(fname_src:str):
     if DEBUG_DATALOADER:
@@ -46,54 +47,6 @@ def read_data_and_label(patient_id:str, src_folder:str):
 
     return data_array, label_array
 
-
-# cutout and resize 3-d tensor with shape [w,h,d]
-# 1) cut overheads off from top_left to bottom_right + 1
-#    top_left and bottom_right will be present in the final shape
-# 2) resize shape from step(1) to final shape
-#    final shape taken form the config
-def cutout_and_resize_tensor(tensor, top_left, bottom_right):
-    # assert tensor.ndim == 3
-    t = tensor[top_left[0]:bottom_right[0] + 1, top_left[1]:bottom_right[1] + 1, top_left[2]:bottom_right[2] + 1]
-    t = tf.squeeze(t)
-    # assert tf.rank(t) == 3
-    final_shape = tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
-    t = resize_3d.resize_3d_image(t, final_shape)
-    return t
-
-
-def random_slice_including_pancreas(data, label):
-
-    start_prep = time.time()
-    top_left_label_position = tf.reduce_min(tf.where(label == 1), axis=0)
-    bottom_right_label_position = tf.reduce_max(tf.where(label == 1), axis=0)
-    random_offset_top_left = tf.random.uniform(shape = [3], minval = [0.0, 0.0, 0.0], maxval = tf.cast(top_left_label_position, dtype=tf.float32))
-    random_offset_top_left = tf.cast(random_offset_top_left, dtype = tf.int32)
-    random_offset_bottom_right = tf.random.uniform(shape = [3], minval = tf.cast(bottom_right_label_position, dtype=tf.float32), maxval = tf.cast(tf.shape(data), dtype=tf.float32))
-    random_offset_bottom_right = tf.cast(random_offset_bottom_right, dtype = tf.int32)
-    finish_prep = time.time()
-
-    if DEBUG_DATALOADER:
-        print("\ttop_left_label_position:", top_left_label_position.numpy(), "bottom_right_label_position:", bottom_right_label_position.numpy())
-        print("\tpancreas shape:", (bottom_right_label_position - top_left_label_position).numpy())
-        print("\trandom_offset_top_left:", random_offset_top_left.numpy(), "random_offset_bottom_right:", random_offset_bottom_right.numpy())
-        print("\tslice shape:", (random_offset_bottom_right - random_offset_top_left + 1).numpy())
-
-    start_data = time.time()
-    _data = cutout_and_resize_tensor(data, random_offset_top_left, random_offset_bottom_right)
-    finish_data = time.time()
-
-    start_label = time.time()
-    _label = cutout_and_resize_tensor(label, random_offset_top_left, random_offset_bottom_right)
-    finish_label = time.time()
-
-    if DEBUG_DATA_LOADING_PERFORMANCE:
-        print(f"\tDATA_LOADING_PERFORMANCE: prep: {finish_prep - start_prep:.1f} data: {finish_data - start_data:.1f} label: {finish_label - start_label:.1f}")
-
-    if DEBUG_DATALOADER:
-        print("\t_data shape:", _data.shape, "_label shape:", _label.shape)
-
-    return _data, _label
 
 class FileIterator:
     def __init__(self, folder):
@@ -127,7 +80,7 @@ class Array3d_read_and_resize:
             finish_reading = time.time()
 
             start_resize = time.time()
-            data, label = random_slice_including_pancreas(data, label)
+            # data, label = borders.cut_and_resize_including_pancreas(data, label, np.random.rand(), np.random.rand())
             finish_resize = time.time()
 
             if DEBUG_DATA_LOADING_PERFORMANCE:
@@ -229,13 +182,13 @@ class MeasureTime:
 def __run_through_data_wo_any_action(ds_train, ds_valid):
     for epoch in range(2):
         for i, (t, (data, label)) in enumerate(MeasureTime(ds_train)):
-            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
-            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.2f}")
+            print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std/sum: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_sum(tf.cast(label, dtype=tf.float32)).numpy():.0f}")
 
         print("Valid ds:")
         for i, (t, (data, label)) in enumerate(MeasureTime(ds_valid)):
-            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.3f}")
-            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.3f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.3f}")
+            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.2f}")
+            print(f"valid, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.2f}")
 
 
 

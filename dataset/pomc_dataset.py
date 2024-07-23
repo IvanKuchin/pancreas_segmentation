@@ -8,6 +8,7 @@ import re
 import numpy as np
 import pydicom
 import nrrd
+import borders
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -25,6 +26,15 @@ PATIENTS_SRC_FOLDER = config.POMC_PATIENTS_SRC_FOLDER
 LABELS_SRC_FOLDER   = config.POMC_LABELS_SRC_FOLDER
 
 DEBUG = True
+
+# Stored Values (SV) are the values stored in the image pixel data attribute.
+# Representation value should be calculated as:
+# Rescaled value = SV * Rescale Slope + Rescale Intercept
+# https://dicom.innolitics.com/ciods/digital-x-ray-image/dx-image/00281052
+def dcim_slice_stored_value_to_rescaled_value(slice):
+    rescale_intercept = slice.RescaleIntercept if hasattr(slice, "RescaleIntercept") else 0
+    rescale_slope = slice.RescaleSlope if hasattr(slice, "RescaleSlope") else 1
+    return slice.pixel_array * rescale_slope + rescale_intercept
 
 class POMCDataset:
     def __init__(self, patients_src_folder, labels_src_folder, TFRECORD_FOLDER):
@@ -60,7 +70,8 @@ class POMCDataset:
         ]
 
         if len(slices):
-            result = np.stack([_.pixel_array for _ in slices], axis = -1)
+            result = np.stack([dcim_slice_stored_value_to_rescaled_value(_) for _ in slices], axis = -1)
+            # result = np.stack([_.pixel_array for _ in slices], axis = -1)
         else:
             print("ERROR: can't dcmread from files:", files)
 
@@ -146,6 +157,10 @@ class POMCDataset:
             print("ERROR: label space origin(", label_metadata["space origin"], ") is not close to the data first slice origin(", data_metadata["min"], ")")
             return False
         
+        if np.mean(data) > 1000:
+            print("ERROR: data mean(", np.mean(data), ") is too high. Probably probleam with reading DCIM data")
+            return False
+
         ##############################
         # Thos is not relevant check #
         ##############################
@@ -161,6 +176,7 @@ class POMCDataset:
         print("\tmin/max:\t{}/{} -> {}/{}".format(np.min(tensor_old), np.max(tensor_old), np.min(tensor_new),
                                                 np.max(tensor_new)))
         print("\tmean std:\t{:.3f} {:.3f} -> {:.3f} {:.3f}".format(np.mean(tensor_old), np.std(tensor_old), np.mean(tensor_new), np.std(tensor_new)))
+        print("\tsum:\t\t{} -> {}".format(np.sum(tensor_old), np.sum(tensor_new)))
 
     def preprocess_data(self, data, label):
         # zoom = AUGMENT_SCALED_DIMS / data.shape
@@ -244,15 +260,15 @@ class POMCDataset:
 
         return result
 
-    def save_npy(self, subfolder: str, patient_id:str, original_data, original_label, scaled_data, scaled_label):
+    def save_npy(self, subfolder: str, patient_id:str, percentage: int, original_data, original_label, scaled_data, scaled_label):
         result = True
         scaled_data = np.cast[np.float32](scaled_data)
         scaled_label = np.cast[np.int8](scaled_label)
-        np.savez_compressed(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + ".npz"), [scaled_data, scaled_label])
+        np.savez_compressed(os.path.join(self.TFRECORD_FOLDER, subfolder, patient_id + f"_{percentage}.npz", ), [scaled_data, scaled_label])
 
         return result
 
-    def pickle_src_data(self, ratio=0.2):
+    def pickle_src_data(self, train_valid_percentage=0.2):
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
@@ -264,7 +280,7 @@ class POMCDataset:
         folder_list = glob.glob(os.path.join(self.patients_src_folder, "*"))
 
         for folder in folder_list:
-            subfolder = "train" if np.random.rand() > ratio else "valid"
+            subfolder = "train" if np.random.rand() > train_valid_percentage else "valid"
 
             patient_id = self.get_patient_id_from_folder(folder)
 
@@ -293,24 +309,29 @@ class POMCDataset:
                 print("ERROR: data & labels are not consistent patient_id:", patient_id)
                 continue
 
-            start_ts = time.time()
-            scaled_src_data, scaled_label_data = self.preprocess_data(src_data, label_data)
-            print("\tPreprocess data in {:.2f} sec".format(time.time() - start_ts))
+            for percentage in [0, 30, 60, 90]:
+                print(f"\n\tPreprocess data for {percentage}%")
+
+                scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
+
+                start_ts = time.time()
+                scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data.numpy(), scaled_label.numpy())
+                print("\tPreprocess data in {:.2f} sec".format(time.time() - start_ts))
 
 
-            if DEBUG:
-                print("\tData")
-                self.print_statistic(src_data, scaled_src_data)
-                print("\tLabel")
-                self.print_statistic(label_data, scaled_label_data)
+                if DEBUG:
+                    print("\tData")
+                    self.print_statistic(src_data, scaled_src_data)
+                    print("\tLabel")
+                    self.print_statistic(label_data, scaled_label_data)
 
 
-            if self.sanity_check_after_preprocessing(scaled_src_data, scaled_label_data) == False:
-                print("ERROR: data or label failed sanity check")
-                continue
+                if self.sanity_check_after_preprocessing(scaled_src_data, scaled_label_data) == False:
+                    print("ERROR: data or label failed sanity check")
+                    continue
 
-            if self.save_npy(subfolder, patient_id, src_data, label_data, scaled_src_data, scaled_label_data) == False:
-                print("ERROR: can't save TFRecord patient id:", patient_id)
+                if self.save_npy(subfolder, patient_id, percentage, src_data, label_data, scaled_src_data, scaled_label_data) == False:
+                    print("ERROR: can't save TFRecord patient id:", patient_id)
 
 
 def main():

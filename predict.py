@@ -47,7 +47,7 @@ class Predict:
 
         return data
 
-    def __create_mask(self, data):
+    def __create_segmentation(self, data):
         mask = tf.argmax(data, axis = -1)
         mask = mask[..., tf.newaxis]
         return mask
@@ -103,7 +103,7 @@ class Predict:
 
         return affine
 
-    def __resize_mask_to_dcm_shape(self, mask, dcm_slices):
+    def __resize_segmentation_to_dcm_shape(self, mask, dcm_slices):
         dcm_rows = dcm_slices[0][0x0028, 0x0010].value
         dcm_columns = dcm_slices[0][0x0028, 0x0011].value
         dcm_depth = len(dcm_slices)
@@ -135,9 +135,9 @@ class Predict:
 
         # model.summary()
 
-        prediction = model(src_data)
-        mask = self.__create_mask(prediction)
-        mask = self.__resize_mask_to_dcm_shape(mask, dcm_slices)
+        prediction = model.predict(src_data)
+        mask = self.__create_segmentation(prediction)
+        mask = self.__resize_segmentation_to_dcm_shape(mask, dcm_slices)
         mask = tf.squeeze(mask)
         affine_matrix = self.__get_affine_matrix(dcm_slices)
 
