@@ -103,7 +103,8 @@ def main():
             reduce_lr_on_plateau,
             csv_logger,
             # early_stopping,
-            tf.keras.callbacks.TerminateOnNaN()],
+            # tf.keras.callbacks.TerminateOnNaN()
+            ],
         verbose = 1,
         # workers = 2
     )
