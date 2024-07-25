@@ -18,10 +18,19 @@ class Predict:
             print("ERROR: no dcim files found")
         return slices
 
+    # Stored Values (SV) are the values stored in the image pixel data attribute.
+    # Representation value should be calculated as:
+    # Rescaled value = SV * Rescale Slope + Rescale Intercept
+    # https://dicom.innolitics.com/ciods/digital-x-ray-image/dx-image/00281052
+    def __dcim_slice_stored_value_to_rescaled_value(self, slice):
+        rescale_intercept = slice.RescaleIntercept if hasattr(slice, "RescaleIntercept") else 0
+        rescale_slope = slice.RescaleSlope if hasattr(slice, "RescaleSlope") else 1
+        return slice.pixel_array * rescale_slope + rescale_intercept
+
     def __get_pixel_data(self, dcm_slices):
         result = np.array([])
         if len(dcm_slices):
-            result = np.stack([_.pixel_array for _ in dcm_slices], axis = -1)
+            result = np.stack([self.__dcim_slice_stored_value_to_rescaled_value(_) for _ in dcm_slices], axis = -1)
         else:
             print("ERROR: dcim list is empty")
 
@@ -85,6 +94,12 @@ class Predict:
         affine[1, 1] = dcm_patient_orientation[4] * dcm_pixel_spacing[1]
         affine[2, 1] = dcm_patient_orientation[5] * dcm_pixel_spacing[1]
 
+        affine[0, 3] = dcm_patient_position[0]
+        affine[1, 3] = dcm_patient_position[1]
+        affine[2, 3] = dcm_patient_position[2]
+
+        affine[2, 2] = dcm_slice_thickness
+
         # --- inverse axes X and Y. This was found experimental way
         # --- could be wrong ... 
         affine[0, 0] = -affine[0, 0]
@@ -95,11 +110,8 @@ class Predict:
         affine[1, 1] = -affine[1, 1]
         affine[2, 1] = -affine[2, 1]
 
-        affine[2, 2] = dcm_slice_thickness
-
-        affine[0, 3] = dcm_patient_position[0]
-        affine[1, 3] = dcm_patient_position[1]
-        affine[2, 3] = dcm_patient_position[2]
+        affine[0, 3] = -affine[0, 3]
+        affine[1, 3] = -affine[1, 3]
 
         return affine
 
