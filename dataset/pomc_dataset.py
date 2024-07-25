@@ -147,7 +147,7 @@ class POMCDataset:
         
         if data.shape != label.shape:
             print("ERROR: data shape(", data.shape, ") is not equal to the label shape(", label.shape, ")")
-            # return False
+            return False
 
         if not self._point_inside_box(data_metadata["min"], data_metadata["max"], label_metadata["space origin"]):
             print("ERROR: label space origin(", label_metadata["space origin"], ") is outside the data box(", data_metadata["min"], data_metadata["max"], ")")
