@@ -54,8 +54,13 @@ def main():
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
 
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(config.MODEL_CHECKPOINT, monitor = config.MONITOR_METRIC,
-                                                       mode = config.MONITOR_MODE, verbose = 2, save_best_only = True)
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
+                                                    config.MODEL_CHECKPOINT, 
+                                                    monitor = config.MONITOR_METRIC,
+                                                    mode = config.MONITOR_MODE, 
+                                                    verbose = 2, 
+                                                    # save_best_only = True
+                                                    )
     csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
     reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
