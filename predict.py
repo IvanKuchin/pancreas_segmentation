@@ -129,9 +129,8 @@ class Predict:
         nib.save(img_to_save, result_file_name)
 
     def __print_stat(self, data, title=""):
-        print('-' * 100)
         if len(title):
-            print(title)
+            print('-' * 25, title, '-' * 25)
         print("shape", data.shape)
         print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data),
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
