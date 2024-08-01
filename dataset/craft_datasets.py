@@ -72,7 +72,7 @@ class Array3d_read_and_resize:
     def __call__(self):
         self.file_list = FileIterator(self.folder)
         for data_file in self.file_list:
-            # print("file:", data_file)
+            print("file:", data_file)
             patient_id = fname_to_patientid(data_file)
 
             start_reading = time.time()
@@ -179,11 +179,18 @@ class MeasureTime:
         latency = time.time() - start
         return latency, x
 
+def __pancreas_histogram(data, label):
+    data1 = np.where(label == 1, data, -1)
+    print(f"pancreas histogram1: {np.histogram(data, bins = 10)}")
+    print(f"pancreas histogram2: {np.histogram(data1, bins = 10)}")
+
+
 def __run_through_data_wo_any_action(ds_train, ds_valid):
     for epoch in range(2):
         for i, (t, (data, label)) in enumerate(MeasureTime(ds_train)):
             print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\t data shape: {data.shape}\tmean/std: {tf.reduce_mean(tf.cast( data, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast( data, dtype=tf.float32)).numpy():.2f}")
             print(f"train, epoch/batch {epoch}/{i:02d},\tlatency {t:.1f}\tlabel shape: {label.shape}\tmean/std/sum: {tf.reduce_mean(tf.cast(label, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_std(tf.cast(label, dtype=tf.float32)).numpy():.2f}/{tf.math.reduce_sum(tf.cast(label, dtype=tf.float32)).numpy():.0f}")
+            __pancreas_histogram(data, label)
 
         print("Valid ds:")
         for i, (t, (data, label)) in enumerate(MeasureTime(ds_valid)):
