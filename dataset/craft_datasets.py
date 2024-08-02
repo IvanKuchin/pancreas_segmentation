@@ -72,7 +72,7 @@ class Array3d_read_and_resize:
     def __call__(self):
         self.file_list = FileIterator(self.folder)
         for data_file in self.file_list:
-            print("file:", data_file)
+            # print("file:", data_file)
             patient_id = fname_to_patientid(data_file)
 
             start_reading = time.time()
