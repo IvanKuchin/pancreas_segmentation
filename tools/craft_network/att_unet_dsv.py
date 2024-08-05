@@ -106,7 +106,7 @@ def layer_info(layer):
 def main():
     import numpy as np 
     
-    model_original = craft_network("", apply_batchnorm = True)
+    model_original = craft_network("", apply_batchnorm = config.BATCH_NORM)
     model_original.summary(line_length = 128)
     model_original.save("test.keras")
     model_original.save_weights("test.weights.h5")

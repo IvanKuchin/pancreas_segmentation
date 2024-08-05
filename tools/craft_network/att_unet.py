@@ -78,6 +78,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 
     if checkpoint_file and os.path.exists(checkpoint_file):
         print("Loading weights from checkpoint ", checkpoint_file)
+        model(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
         model.load_weights(checkpoint_file)
     else:
         print("Checkpoint file {} not found".format(checkpoint_file))
@@ -86,7 +87,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
 
 
 def main():
-    model = craft_network("", apply_batchnorm = False)
+    model = craft_network("checkpoints/weights.keras", apply_batchnorm = config.BATCH_NORM)
 
     model.summary(line_length = 128, expand_nested = True, show_trainable = True)
     predict_on_random_data(model)
