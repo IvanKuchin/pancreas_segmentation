@@ -27,15 +27,24 @@ def __custom_loss(y_true, y_pred):
 
     # count_0 = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
     # count_1 = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
-
     # background_weight = (1 - count_0 / (count_0 + count_1)) * config.LOSS_SCALER
     # foreground_weight = (1 - count_1 / (count_0 + count_1)) * config.LOSS_SCALER / 5
 
-    background_weight = config.BACKGROUND_WEIGHT
-    foreground_weight = config.FOREGROUND_WEIGHT
+    # background_weight = config.BACKGROUND_WEIGHT  # incorrect loss calculations
+    # foreground_weight = config.FOREGROUND_WEIGHT  # incorrect loss calculations
+    # foreground_weight -= background_weight  # incorrect loss calculations
+
+    # loss function described in the paper https://arxiv.org/pdf/1803.05431v2
+    foreground_size = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
+    background_size = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
+    size = tf.cast(tf.size(y_true), dtype = tf.float32)
+    foreground_weight = (1.0 - foreground_size / size) / 2.0
+    background_weight = (1.0 - background_size / size) / 2.0
+    # foreground and background weights must add up to 1 
+    # it will be added/reversed later
     foreground_weight -= background_weight
 
-    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
+    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
         y_pred,
