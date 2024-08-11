@@ -21,7 +21,25 @@ def get_csv_dir():
     return os.path.join(root_log_dir, run_id)
 
 
-def __custom_loss(y_true, y_pred):
+def __dice_coef(y_true, y_pred):
+    gamma = 100.0
+    y_true = tf.cast(y_true, dtype = tf.float32)
+    y_pred = tf.cast(y_pred[..., 1:2], dtype = tf.float32)
+
+    # print("y_true shape: ", y_true.shape)
+    # print("y_pred shape: ", y_pred.shape)
+
+    intersection = tf.reduce_sum(y_true * y_pred)
+    dice = (2. * intersection + gamma) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + gamma)
+    return dice
+
+def __dice_loss(y_true, y_pred):
+    return -tf.math.log(__dice_coef(y_true, y_pred))
+
+
+def __weighted_loss(y_true, y_pred):
+    scaler = 1
+
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred, dtype = tf.float32)
 
@@ -38,7 +56,7 @@ def __custom_loss(y_true, y_pred):
     foreground_size = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
     background_size = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
     size = tf.cast(tf.size(y_true), dtype = tf.float32)
-    foreground_weight = (1.0 - foreground_size / size) / 2.0
+    foreground_weight = (1.0 - foreground_size / size) / 2.0 * scaler
     background_weight = (1.0 - background_size / size) / 2.0
     # foreground and background weights must add up to 1 
     # it will be added/reversed later
@@ -48,7 +66,7 @@ def __custom_loss(y_true, y_pred):
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
         y_pred,
-        sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0)
+        sample_weight = tf.maximum(y_true * foreground_weight + background_weight, 0.0),
     )
 
     return loss
@@ -82,7 +100,7 @@ def main():
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
                                                       verbose = 1)
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = config.INITIAL_LEARNING_RATE),
-                  loss = __custom_loss,
+                  loss = __dice_loss,
                   metrics = [
                       'accuracy',
                       CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
@@ -120,7 +138,10 @@ def main():
 
 
 def test_loss():
-    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    loss_fn = __dice_loss
+    # loss_fn = __weighted_loss
+
+    y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 4.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
@@ -128,29 +149,82 @@ def test_loss():
     print("shape of y_true: ", y_true.shape)
     print("shape of y_pred: ", y_pred.shape)
 
-    loss = __custom_loss(y_true, y_pred)
+    loss = loss_fn(y_true, y_pred)
     print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
 
-    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 0.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
-    loss = __custom_loss(y_true, y_pred)
+    loss = loss_fn(y_true, y_pred)
     print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
 
-    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[4.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
-    loss = __custom_loss(y_true, y_pred)
+    loss = loss_fn(y_true, y_pred)
     print("expect 1, predict 0: loss {:.4f}".format(loss.numpy()))
 
-    y_true = np.array([[[[[  1], [  0]], [[  0], [  0]]], [[[  0], [  0]], [[  0], [  0]]]]])
+    y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 0.9], [0.1, 4.9]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
-    loss = __custom_loss(y_true, y_pred)
+    loss = loss_fn(y_true, y_pred)
     print("expect 0, predict 1: loss {:.4f}".format(loss.numpy()))
+
+    print("--- big volume")
+
+    mx_size = 200
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:11, 10:11, 10:11, 0] = 1
+    y_pred[0, 10:11, 10:11, 10:11, 1] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t1, predict\t1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:11, 10:11, 10:11, 0] = 1.0
+    y_pred[0, 10:11, 10:11, 10:11, 1] = 0.5
+    y_true = tf.convert_to_tensor(y_true, dtype=tf.float32)
+    y_pred = tf.convert_to_tensor(y_pred, dtype=tf.float32)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t1, predict    0.5: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:11, 10:11, 10:11, 0] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t1, predict\t0: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:12, 10:11, 10:11, 0] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t    2 x 1, predict\t0: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_pred[0, 10:11, 10:11, 10:11, 1] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t0, predict\t1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_pred[0, 10:12, 10:11, 10:11, 1] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t0, predict  2 x 1: loss {:.4f}".format(loss.numpy()))
 
 
 if __name__ == "__main__":
