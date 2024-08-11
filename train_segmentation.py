@@ -24,13 +24,14 @@ def get_csv_dir():
 def __dice_coef(y_true, y_pred):
     gamma = 100.0
     y_true = tf.cast(y_true, dtype = tf.float32)
-    y_pred = tf.cast(tf.argmax(y_pred, axis=-1)[..., tf.newaxis], dtype = tf.float32)
+    y_pred = tf.cast(y_pred[..., 1:2], dtype = tf.float32)
 
     # print("y_true shape: ", y_true.shape)
     # print("y_pred shape: ", y_pred.shape)
 
     intersection = tf.reduce_sum(y_true * y_pred)
-    return (2. * intersection + gamma) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + gamma)
+    dice = (2. * intersection + gamma) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + gamma)
+    return dice
 
 def __dice_loss(y_true, y_pred):
     return -tf.math.log(__dice_coef(y_true, y_pred))
@@ -138,7 +139,7 @@ def main():
 
 def test_loss():
     loss_fn = __dice_loss
-    loss_fn = __weighted_loss
+    # loss_fn = __weighted_loss
 
     y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 4.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
@@ -182,7 +183,16 @@ def test_loss():
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
     loss = loss_fn(y_true, y_pred)
-    print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
+    print("expect\t\t1, predict\t1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:11, 10:11, 10:11, 0] = 1.0
+    y_pred[0, 10:11, 10:11, 10:11, 1] = 0.5
+    y_true = tf.convert_to_tensor(y_true, dtype=tf.float32)
+    y_pred = tf.convert_to_tensor(y_pred, dtype=tf.float32)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t1, predict    0.5: loss {:.4f}".format(loss.numpy()))
 
     y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
     y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
@@ -190,7 +200,15 @@ def test_loss():
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
     loss = loss_fn(y_true, y_pred)
-    print("expect 1, predict 0: loss {:.4f}".format(loss.numpy()))
+    print("expect\t\t1, predict\t0: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_true[0, 10:12, 10:11, 10:11, 0] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t    2 x 1, predict\t0: loss {:.4f}".format(loss.numpy()))
 
     y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
     y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
@@ -198,7 +216,15 @@ def test_loss():
     y_true = tf.convert_to_tensor(y_true)
     y_pred = tf.convert_to_tensor(y_pred)
     loss = loss_fn(y_true, y_pred)
-    print("expect 0, predict 1: loss {:.4f}".format(loss.numpy()))
+    print("expect\t\t0, predict\t1: loss {:.4f}".format(loss.numpy()))
+
+    y_true = np.zeros((1, mx_size, mx_size, mx_size, 1))
+    y_pred = np.zeros((1, mx_size, mx_size, mx_size, 2))
+    y_pred[0, 10:12, 10:11, 10:11, 1] = 1
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tensor(y_pred)
+    loss = loss_fn(y_true, y_pred)
+    print("expect\t\t0, predict  2 x 1: loss {:.4f}".format(loss.numpy()))
 
 
 if __name__ == "__main__":
