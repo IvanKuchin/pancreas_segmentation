@@ -21,14 +21,14 @@ def double_conv(filters, kernel_size=[3,3,1], apply_batchnorm=True, apply_dropou
     model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
     if (apply_batchnorm):
         model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
-    model.add(tf.keras.layers.ReLU())
+    model.add(tf.keras.layers.LeakyReLU())
     if (apply_dropout):
         model.add(tf.keras.layers.Dropout(0.5))
 
     model.add(tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform'))
     if (apply_batchnorm):
         model.add(tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM))
-    model.add(tf.keras.layers.ReLU())
+    model.add(tf.keras.layers.LeakyReLU())
     if (apply_dropout):
         model.add(tf.keras.layers.Dropout(0.5))
 
@@ -79,7 +79,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm=True):
     concat_layer = tf.keras.layers.Concatenate()(dsv_outputs)
     # print("concat layer shape: {}".format(concat_layer.shape))
 
-    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform")(concat_layer)
+    output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform", activation="softmax")(concat_layer)
     # output_layer = tf.keras.activations.softmax(output_layer)
 
     model = tf.keras.models.Model(inputs = [inputs], outputs = [output_layer])
