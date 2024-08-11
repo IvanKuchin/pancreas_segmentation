@@ -62,7 +62,7 @@ def __weighted_loss(y_true, y_pred):
     # it will be added/reversed later
     foreground_weight -= background_weight
 
-    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
         y_pred,
