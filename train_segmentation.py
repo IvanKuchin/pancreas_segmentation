@@ -101,7 +101,7 @@ def main():
                                                       verbose = 1)
     model.compile(optimizer = tf.keras.optimizers.Adam(
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
-                                                        gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
+                                                        # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
                   loss = __dice_loss,
                   metrics = [
