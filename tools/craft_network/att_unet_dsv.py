@@ -27,14 +27,14 @@ def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instance
         x = res_block(_filter, x.shape, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm, apply_instancenorm = apply_instancenorm)(x)
         generator_steps_output.append(x)
         if idx < len(filters) - 1:
-            x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 1), padding = "same")(x)
+            x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 2), padding = "same")(x)
 
     gating_base = get_gating_base(filters[-2], apply_batchnorm)(x)
 
     dsv_outputs = []
     skip_conns = reversed(generator_steps_output[:-1])
     for idx, (_filter, skip_conn) in enumerate(zip(reversed(filters[:-1]), skip_conns)):
-        x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = [4,4,1], strides = [2,2,1], padding = "same", kernel_initializer='he_uniform')(x)
+        x = tf.keras.layers.Conv3DTranspose(_filter, kernel_size = [4,4,4], strides = [2,2,2], padding = "same", kernel_initializer='he_uniform')(x)
 
         if _filter == filters[0]:
             # --- don't gate signal due to no useful features at top level

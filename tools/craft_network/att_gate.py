@@ -19,7 +19,7 @@ class AttGate(tf.keras.layers.Layer):
         if(x_shape[1] == gated_shape[1]):
             subsample_factor = [1,1,1]
         else:
-            subsample_factor = [2,2,1]
+            subsample_factor = [2,2,2]
 
         # print("{} {}".format())
 
@@ -147,11 +147,11 @@ def __attention_gate(x, gated, apply_batchnorm=True):
 
 
 if __name__ == "__main__":
-    rnd = tf.random.uniform([3, 64, 64, 256, 8])
+    rnd = tf.random.uniform([3, 64, 64, 64, 8])
 
     inp = tf.keras.layers.Input(shape = rnd.shape[1:])
     x_shape = tf.keras.layers.Conv3D(16, kernel_size = 1, strides = 1, padding = "same", name="x")(inp)
-    gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 1), strides = (4, 4, 1), padding = "same", name="gate")(inp)
+    gated_shape = tf.keras.layers.Conv3D(128, kernel_size = (8, 8, 8), strides = (4, 4, 4), padding = "same", name="gate")(inp)
 
     result = AttGate(apply_batchnorm = False)((x_shape, gated_shape))
 

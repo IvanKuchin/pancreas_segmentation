@@ -3,7 +3,7 @@ TRAIN_PASSES_PER_VALIDATION = 1
 
 NUMBER_OF_CONV_IN_LAYER = 2
 
-KERNEL_SIZE = [3,3,1]
+KERNEL_SIZE = [3,3,3]
 
 # BACKGROUND_WEIGHT = 1  # must be calculated dynamically
 # FOREGROUND_WEIGHT = 7  # must be calculated dynamically
