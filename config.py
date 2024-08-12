@@ -9,7 +9,7 @@ KERNEL_SIZE = [3,3,3]
 # FOREGROUND_WEIGHT = 7  # must be calculated dynamically
 
 INITIAL_LEARNING_RATE = 0.001
-INSTANCE_NORM = False
+INSTANCE_NORM = False       # not supported yet
 BATCH_NORM = True
 BATCH_SIZE = 1
 BATCH_NORM_MOMENTUM = 0.8
