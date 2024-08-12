@@ -62,7 +62,7 @@ class AttGate(tf.keras.layers.Layer):
 
 
         __sum = self.add_g_x([theta_x, phi_g])
-        __activation_sum = tf.keras.layers.Activation("relu")(__sum)
+        __activation_sum = tf.keras.layers.LeakyReLU()(__sum)
 
         psi = tf.keras.layers.Activation("sigmoid")(self.psi(__activation_sum))
         psi = self.psi_upsample(psi)

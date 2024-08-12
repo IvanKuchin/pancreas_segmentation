@@ -99,9 +99,9 @@ def main():
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
                                                       verbose = 1)
-    model.compile(optimizer = tf.keras.optimizers.Adam(
+    model.compile(optimizer = tf.keras.optimizers.AdamW(
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
-                                                        gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
+                                                        # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
                   loss = __dice_loss,
                   metrics = [
