@@ -62,7 +62,7 @@ def __weighted_loss(y_true, y_pred):
     # it will be added/reversed later
     foreground_weight -= background_weight
 
-    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+    scce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = False)
     loss = scce(
         tf.maximum(y_true, 0.0),  # remove -1 values from mask,
         y_pred,
@@ -138,8 +138,8 @@ def main():
 
 
 def test_loss():
-    loss_fn = __dice_loss
-    # loss_fn = __weighted_loss
+    # loss_fn = __dice_loss
+    loss_fn = __weighted_loss
 
     y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 4.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])
@@ -150,7 +150,7 @@ def test_loss():
     print("shape of y_pred: ", y_pred.shape)
 
     loss = loss_fn(y_true, y_pred)
-    print("expect 1, predict 1: loss {:.4f}".format(loss.numpy()))
+    print("expect 1, predict 1: loss {:.5f}".format(loss.numpy()))
 
     y_true = np.array([[[[     [  1],      [  0]], [     [  0],      [  0]]], [[     [  0],      [  0]], [     [  0],      [  0]]]]])
     y_pred = np.array([[[[[0.1, 0.9], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]], [[[0.9, 0.1], [0.9, 0.1]], [[0.9, 0.1], [0.9, 0.1]]]]])

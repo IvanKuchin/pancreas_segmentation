@@ -149,7 +149,16 @@ def craft_datasets(src_folder):
 
         read_and_resize = Array3d_read_and_resize(src_folder)
         list_ds = tf.data.Dataset\
-                                    .from_generator(read_and_resize, args=[], output_types=(tf.float16, tf.int16), output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))\
+                                    .from_generator(
+                                        read_and_resize, 
+                                        args=[], 
+                                        output_signature=(
+                                            tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.float32),
+                                            tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.int32)
+                                        ),
+                                        # output_types=(tf.float16, tf.int16), 
+                                        # output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
+                                    )\
                                     .map(random_flip)\
                                     .map(expand_dimension)\
                                     .batch(config.BATCH_SIZE)\
@@ -181,8 +190,8 @@ class MeasureTime:
 
 def __pancreas_histogram(data, label):
     data1 = np.where(label == 1, data, -1)
-    print(f"pancreas histogram1: {np.histogram(data, bins = 10)}")
-    print(f"pancreas histogram2: {np.histogram(data1, bins = 10)}")
+    print(f"data  histogram1: {np.histogram(data, bins = 10)}")
+    print(f"label histogram2: {np.histogram(data1, bins = 10)}")
 
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):
