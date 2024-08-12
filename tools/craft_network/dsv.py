@@ -22,6 +22,8 @@ class DSV(tf.keras.layers.Layer):
         if self.scale_factor > 1:
             x = self.upsample(x)
 
+        x = tf.keras.activations.softmax(x)
+
         return x
 
     ##########################
@@ -44,7 +46,7 @@ if __name__ == "__main__":
     dsv_model = DSV(scale_factor = 4)
     result = dsv_model(x_shape)
 
-    model = tf.keras.models.Model(inputs = [inp], outputs = [result])
+    model = tf.keras.models.Model(inputs = [inp], outputs = result)
     outputs = model(rnd)
 
     model.summary()
