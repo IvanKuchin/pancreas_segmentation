@@ -76,7 +76,7 @@ def main():
     ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
     ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
 
-    ds_train = ds_train.prefetch(3).repeat(config.TRAIN_PASSES_PER_VALIDATION)
+    ds_train = ds_train.prefetch(1).repeat(config.TRAIN_PASSES_PER_VALIDATION)
 
     model = craft_network(config.MODEL_CHECKPOINT)
     # predict_on_random_data(model)
@@ -99,7 +99,10 @@ def main():
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
                                                       verbose = 1)
-    model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = config.INITIAL_LEARNING_RATE),
+    model.compile(optimizer = tf.keras.optimizers.Adam(
+                                                        learning_rate = config.INITIAL_LEARNING_RATE,
+                                                        gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
+                                                        ),
                   loss = __dice_loss,
                   metrics = [
                       'accuracy',

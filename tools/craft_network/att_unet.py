@@ -43,7 +43,7 @@ def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instance
     if (apply_dropout):
         x = tf.keras.layers.Dropout(0.5)(x)
     
-    return tf.keras.models.Model(inputs = [input_layer], outputs = x)
+    return tf.keras.models.Model(inputs = input_layer, outputs = x)
 
 def double_conv(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=False):
     model = tf.keras.models.Sequential()
@@ -72,12 +72,7 @@ def double_conv(filters, input_shape, kernel_size, apply_batchnorm, apply_instan
 
 def get_gating_base(filters, apply_batchnorm = True):
     __model = tf.keras.models.Sequential(name = "gating_base")
-
-    for _ in range(2):
-        __model.add(tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform'))
-        if apply_batchnorm:
-            __model.add(tf.keras.layers.BatchNormalization(momentum = config.BATCH_NORM_MOMENTUM))
-        __model.add(tf.keras.layers.LeakyReLU())
+    __model.add(tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform'))
 
     return __model
 
