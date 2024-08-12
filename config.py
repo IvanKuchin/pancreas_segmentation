@@ -18,8 +18,8 @@ BATCH_NORM_MOMENTUM = 0.8
 # https://radiopaedia.org/articles/windowing-ct?lang=us
 # Option 2) 3D Slicer preset for abdominal CT
 # W/L: 350/40, which makes the pancreas range from -310 to 390
-PANCREAS_MIN_HU =  -512     # -512
-PANCREAS_MAX_HU =  1024     # 1024
+PANCREAS_MIN_HU =  -310     # -512
+PANCREAS_MAX_HU =   390     # 1024
 
 IMAGE_DIMENSION_X = 160
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
