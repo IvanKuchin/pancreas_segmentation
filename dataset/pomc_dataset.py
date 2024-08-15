@@ -42,6 +42,9 @@ class POMCDataset:
         self.labels_src_folder = labels_src_folder
         self.TFRECORD_FOLDER = TFRECORD_FOLDER
 
+        self.min_HU = float("inf")
+        self.max_HU = float("-inf")
+
     def get_patient_id_from_folder(self, folder):
         result = None
         m = re.search("(\\w+)$", folder)
@@ -159,6 +162,21 @@ class POMCDataset:
         
         if np.mean(data) > 1000:
             print("ERROR: data mean(", np.mean(data), ") is too high. Probably probleam with reading DCIM data")
+            return False
+
+        # calculate min/max HU in pancreas area
+        gt_idx = label == 1
+        min_HU = np.min(data[gt_idx])
+        max_HU = np.max(data[gt_idx])
+        self.min_HU = min(self.min_HU, min_HU)
+        self.max_HU = max(self.max_HU, max_HU)
+
+        if min_HU < config.PANCREAS_MIN_HU or min_HU > config.PANCREAS_MAX_HU:
+            print("ERROR: min HU(", min_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
+            return False
+        
+        if max_HU < config.PANCREAS_MIN_HU or max_HU > config.PANCREAS_MAX_HU:
+            print("ERROR: max HU(", max_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
             return False
 
         ##############################
@@ -337,6 +355,9 @@ class POMCDataset:
 def main():
     pomc = POMCDataset(PATIENTS_SRC_FOLDER, LABELS_SRC_FOLDER, config.TFRECORD_FOLDER)
     pomc.pickle_src_data()
+    
+    print("min HU in pancreas area:", pomc.min_HU)
+    print("max HU in pancreas area:", pomc.max_HU)
     return
 
 if __name__ == "__main__":
