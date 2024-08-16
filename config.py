@@ -20,6 +20,8 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 # https://radiopaedia.org/articles/windowing-ct?lang=us
 # Option 2) 3D Slicer preset for abdominal CT
 # W/L: 350/40, which makes the pancreas range from -310 to 390
+#
+# Our pancreas calculations show values from -1200 to 4000
 PANCREAS_MIN_HU =  -1200    # -512
 PANCREAS_MAX_HU =   4000    # 1024
 
