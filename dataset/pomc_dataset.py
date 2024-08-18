@@ -348,7 +348,7 @@ class POMCDataset:
                 #     print("ERROR: can't save TFRecord patient id:", patient_id)
                 #     continue
 
-                print(f"\tSave patientID: {patient_id} to {subfolder} with margin {percentage}%")
+                print(f"\tSave patientID: {patient_id} to {subfolder} with border cut out around pancreas at {percentage}%")
                 saver = Saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
                 if saver.save(scaled_src_data, scaled_label_data) == False:
                     print("ERROR: can't save sliced CT of patientID:", patient_id)
