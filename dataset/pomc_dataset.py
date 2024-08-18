@@ -6,9 +6,11 @@ import os
 import sys
 import re
 import numpy as np
+import numpy.typing as npt
 import pydicom
 import nrrd
 import borders
+from saver import Saver
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -171,20 +173,12 @@ class POMCDataset:
         self.min_HU = min(self.min_HU, min_HU)
         self.max_HU = max(self.max_HU, max_HU)
 
-        if min_HU < config.PANCREAS_MIN_HU or min_HU > config.PANCREAS_MAX_HU:
-            print("ERROR: min HU(", min_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
-            return False
+        # if min_HU < config.PANCREAS_MIN_HU or min_HU > config.PANCREAS_MAX_HU:
+        #     print("ERROR: min HU(", min_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
+        #     return False
         
-        if max_HU < config.PANCREAS_MIN_HU or max_HU > config.PANCREAS_MAX_HU:
-            print("ERROR: max HU(", max_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
-            return False
-
-        ##############################
-        # Thos is not relevant check #
-        ##############################
-        # print("\tDICOM min/max coordinates:", data_metadata["min"], data_metadata["max"])
-        # if self._body_up_side_down(data_metadata["min"]):
-        #     print("ERROR: data is upside down")
+        # if max_HU < config.PANCREAS_MIN_HU or max_HU > config.PANCREAS_MAX_HU:
+        #     print("ERROR: max HU(", max_HU, ") in pancreas area is out of range [", config.PANCREAS_MIN_HU, config.PANCREAS_MAX_HU, "]")
         #     return False
         
         return True
@@ -234,7 +228,8 @@ class POMCDataset:
         #
         # scale final data to [-1; 1] range, that should help with ReLU activation
         #
-        data_processed = (data - np.min(data)) / (np.max(data) - np.min(data)) * 2 - 1
+        spread = config.MAX_DATA - config.MIN_DATA
+        data_processed = (data - np.min(data)) / (np.max(data) - np.min(data)) * spread - spread / 2
         # if data_processed.shape != AUGMENT_SCALED_DIMS:
         #     print_error("wrong Z-axis dimensionality {} must be {}".format(data_processed.shape, AUGMENT_SCALED_DIMS))
 
@@ -246,13 +241,13 @@ class POMCDataset:
         # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
         # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
 
-        if np.min(data) != -1: # data scaled to range [-1, 1]
+        if np.min(data) != config.MIN_DATA: # data scaled to range [-1, 1]
             result = False
             print("ERROR: (min(data) == {}) != -1".format(np.min(data)))
         if np.mean(data) == 0:
             result = False
             print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
-        if np.max(data) != 1:
+        if np.max(data) != config.MAX_DATA:
             result = False
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 
@@ -265,20 +260,20 @@ class POMCDataset:
                 result = False
                 print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
         else:
-            if np.min(label) != 0:
+            if np.min(label) != config.MIN_LABEL:
                 result = False
                 print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
 
         if np.mean(label) == 0:
             result = False
             print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))
-        if np.max(label) != 1:
+        if np.max(label) != config.MAX_LABEL:
             result = False
             print("ERROR: (max(label) == {}) != 1".format(np.max(label)))
 
         return result
 
-    def save_npy(self, subfolder: str, patient_id:str, percentage: int, original_data, original_label, scaled_data, scaled_label):
+    def save_npz(self, subfolder: str, patient_id:str, percentage: int, original_data, original_label, scaled_data, scaled_label):
         result = True
         scaled_data = np.cast[np.float32](scaled_data)
         scaled_label = np.cast[np.int8](scaled_label)
@@ -286,7 +281,7 @@ class POMCDataset:
 
         return result
 
-    def pickle_src_data(self, train_valid_percentage=0.2):
+    def pickle_src_data(self, train_valid_percentage=0.15):
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
@@ -327,10 +322,11 @@ class POMCDataset:
                 print("ERROR: data & labels are not consistent patient_id:", patient_id)
                 continue
 
-            for percentage in [0, 30, 60, 90]:
+            for percentage in [0]:   # [0, 30, 60, 90]:
                 print(f"\n\tPreprocess data for {percentage}%")
 
-                scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
+                # scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
+                scaled_data, scaled_label = tf.constant(src_data), tf.constant(label_data)
 
                 start_ts = time.time()
                 scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data.numpy(), scaled_label.numpy())
@@ -348,16 +344,19 @@ class POMCDataset:
                     print("ERROR: data or label failed sanity check")
                     continue
 
-                if self.save_npy(subfolder, patient_id, percentage, src_data, label_data, scaled_src_data, scaled_label_data) == False:
-                    print("ERROR: can't save TFRecord patient id:", patient_id)
+                # if self.save_npz(subfolder, patient_id, percentage, src_data, label_data, scaled_src_data, scaled_label_data) == False:
+                #     print("ERROR: can't save TFRecord patient id:", patient_id)
+                #     continue
 
+                print(f"\tSave patientID: {patient_id} to {subfolder} with border cut out around pancreas at {percentage}%")
+                saver = Saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+                if saver.save(scaled_src_data, scaled_label_data) == False:
+                    print("ERROR: can't save sliced CT of patientID:", patient_id)
+                    continue
 
 def main():
     pomc = POMCDataset(PATIENTS_SRC_FOLDER, LABELS_SRC_FOLDER, config.TFRECORD_FOLDER)
     pomc.pickle_src_data()
-    
-    print("min HU in pancreas area:", pomc.min_HU)
-    print("max HU in pancreas area:", pomc.max_HU)
     return
 
 if __name__ == "__main__":
