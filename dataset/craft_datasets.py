@@ -71,7 +71,7 @@ class Array3d_read_and_resize:
 
     def random_crop(self, data, label, x, y, z):
         data_shape = np.shape(data)
-        random_range = [data_shape[0] - x, data_shape[1] - y, data_shape[2] - z]
+        random_range = [data_shape[0] - x + 1, data_shape[1] - y + 1, data_shape[2] - z + 1]
         random_offset = np.random.randint(0, random_range, size = 3)
         _data = data[
                 random_offset[0]:random_offset[0] + x,
@@ -207,9 +207,8 @@ class MeasureTime:
         return latency, x
 
 def __pancreas_histogram(data, label):
-    data1 = np.where(label == 1, data, -1)
     print(f"data  histogram1: {np.histogram(data, bins = 10)}")
-    print(f"label histogram2: {np.histogram(data1, bins = 10)}")
+    print(f"label histogram2: {np.histogram(label, bins = 10)}")
 
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):
