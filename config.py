@@ -22,12 +22,21 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 # W/L: 350/40, which makes the pancreas range from -310 to 390
 #
 # Our pancreas calculations show values from -1200 to 4000
-PANCREAS_MIN_HU =  -1200    # -512
-PANCREAS_MAX_HU =   4000    # 1024
+#
+# training attempts shows that the best performance in the range [-512, 1024]
+PANCREAS_MIN_HU =  -512    # -512
+PANCREAS_MAX_HU =  1024    # 1024
 
 IMAGE_DIMENSION_X = 160
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
 IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
+
+AUGMENTATIO_SHIFT_MARGIN = 0.1
+
+MIN_LABEL = 0
+MAX_LABEL = 1
+MIN_DATA = -1
+MAX_DATA = 1
 
 MONITOR_METRIC = "val_custom_f1"
 MONITOR_MODE = "max"
