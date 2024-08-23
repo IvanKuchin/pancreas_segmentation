@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pydicom
 import nrrd
 import borders
-from saver import Saver
+from dataset.savers.factory import SaverFactory
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -284,6 +284,8 @@ class POMCDataset:
         return result
 
     def pickle_src_data(self, train_valid_percentage=0.15):
+        saver = SaverFactory()("tiled" if config.IS_TILE == True else "no_tiled")
+
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
@@ -327,7 +329,9 @@ class POMCDataset:
             for percentage in [0]:   # [0, 30, 60, 90]:
                 print(f"\n\tPreprocess data for {percentage}%")
 
-                # scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
+                if config.IS_TILE == False:
+                    # scale data down to training size (augment border + resize)
+                    scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
                 scaled_data, scaled_label = tf.constant(src_data), tf.constant(label_data)
 
                 start_ts = time.time()
@@ -351,8 +355,8 @@ class POMCDataset:
                 #     continue
 
                 print(f"\tSave patientID: {patient_id} to {subfolder} with border cut out around pancreas at {percentage}%")
-                saver = Saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
-                if saver.save(scaled_src_data, scaled_label_data) == False:
+                saver_obj = saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+                if saver_obj.save(scaled_src_data, scaled_label_data) == False:
                     print("ERROR: can't save sliced CT of patientID:", patient_id)
                     continue
 
