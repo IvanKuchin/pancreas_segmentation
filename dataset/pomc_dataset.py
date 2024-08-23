@@ -47,6 +47,8 @@ class POMCDataset:
         self.min_HU = float("inf")
         self.max_HU = float("-inf")
 
+        # self.saver = SaverFactory(config.IS_TILE)
+
     def get_patient_id_from_folder(self, folder):
         result = None
         m = re.search("(\\w+)$", folder)
