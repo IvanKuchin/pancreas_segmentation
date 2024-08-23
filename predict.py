@@ -7,6 +7,8 @@ import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
 import config as config
+from tools.predict.predict_no_tile import PredictNoTile
+from tools.predict.predict_tile import PredictTile
 
 
 class Predict:
@@ -125,6 +127,15 @@ class Predict:
         return result
 
     def __save_img_to_nifti(self, data, affine, result_file_name):
+        # TODO: add meta information
+        # affine = meta['affine'][0].cpu().numpy()
+        # pixdim = meta['pixdim'][0].cpu().numpy()
+        # dim    = meta['dim'][0].cpu().numpy()
+
+        # img = nib.Nifti1Image(input_nii_array, affine=affine)
+        # img.header['dim'] = dim
+        # img.header['pixdim'] = pixdim
+
         img_to_save = nib.Nifti1Image(data, affine)
         nib.save(img_to_save, result_file_name)
 
@@ -136,6 +147,15 @@ class Predict:
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
                                                         tf.reduce_max(data), tf.reduce_sum(data)))
 
+    def __predict(self, src_data, model):
+        if config.IS_TILE == True:
+            predict_class = PredictTile(model)
+        else:
+            predict_class = PredictNoTile(model)
+
+        prediction = predict_class(src_data)
+        return prediction
+
     def main(self, dcm_folder, result_file_name):
         dcm_slices = self.__read_dcm_slices(dcm_folder)
         raw_pixel_data = self.__get_pixel_data(dcm_slices)
@@ -146,7 +166,8 @@ class Predict:
 
         # model.summary()
 
-        prediction = model.predict(src_data)
+        # prediction = model.predict(src_data)
+        prediction = self.__predict(src_data, model)
         mask = self.__create_segmentation(prediction)
         mask = self.__resize_segmentation_to_dcm_shape(mask, dcm_slices)
         mask = tf.squeeze(mask)

@@ -22,7 +22,7 @@ def get_csv_dir():
 
 
 def __dice_coef(y_true, y_pred):
-    gamma = 100.0
+    gamma = 0.01
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred[..., 1:2], dtype = tf.float32)
 
@@ -30,11 +30,12 @@ def __dice_coef(y_true, y_pred):
     # print("y_pred shape: ", y_pred.shape)
 
     intersection = tf.reduce_sum(y_true * y_pred)
-    dice = (2. * intersection + gamma) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + gamma)
+    union = tf.reduce_sum(y_true) + tf.reduce_sum(y_pred)
+    dice = (2. * intersection + gamma) / (union + gamma)
     return dice
 
 def __dice_loss(y_true, y_pred):
-    return -tf.math.log(__dice_coef(y_true, y_pred))
+    return 1 - __dice_coef(y_true, y_pred)
 
 
 def __weighted_loss(y_true, y_pred):

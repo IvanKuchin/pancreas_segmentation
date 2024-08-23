@@ -43,7 +43,8 @@ def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instance
     if (apply_dropout):
         x = tf.keras.layers.Dropout(0.5)(x)
     
-    return tf.keras.models.Model(inputs = input_layer, outputs = x)
+    model =  tf.keras.models.Model(inputs = input_layer, outputs = x, name = "res_block_{}_{}".format(input_shape[-1], filters))
+    return model
 
 def double_conv(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=False):
     model = tf.keras.models.Sequential()

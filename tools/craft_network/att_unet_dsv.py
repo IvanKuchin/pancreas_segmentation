@@ -29,7 +29,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instance
         if idx < len(filters) - 1:
             x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 2), padding = "same")(x)
 
-    gating_base = get_gating_base(filters[-2], apply_batchnorm)(x)
+    gating_base = get_gating_base(filters[-1], apply_batchnorm)(x)
 
     dsv_outputs = []
     skip_conns = reversed(generator_steps_output[:-1])
@@ -40,7 +40,9 @@ def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instance
             # --- don't gate signal due to no useful features at top level
             gated_skip = skip_conn
         else:
-            gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, gating_base))
+            if idx == 0:
+                gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, gating_base))
+            gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, x))
 
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
         x = res_block(_filter, x.shape, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm, apply_instancenorm = apply_instancenorm)(x)
