@@ -25,7 +25,13 @@ def cutout_and_resize_tensor(tensor, top_left, bottom_right):
     t = tensor[top_left[0]:bottom_right[0] + 1, top_left[1]:bottom_right[1] + 1, top_left[2]:bottom_right[2] + 1]
     t = tf.squeeze(t)
     # assert tf.rank(t) == 3
-    final_shape = tf.constant([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
+
+    final_shape = tf.constant([
+                    config.IMAGE_DIMENSION_X * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN), 
+                    config.IMAGE_DIMENSION_Y * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN), 
+                    config.IMAGE_DIMENSION_Z * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN),
+                    ])
+    final_shape = tf.cast(final_shape, dtype = tf.int32)
     t = resize_3d.resize_3d_image(t, final_shape)
     return t
 

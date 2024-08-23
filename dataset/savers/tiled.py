@@ -46,7 +46,7 @@ class Slicer:
                     yield data, label, x, y, z
 
 
-class Saver:
+class SaverTiled:
     def __init__(self, folder: str, subfolder: str, patient_id:str, percentage: int, image_dimension_x: int, image_dimension_y: int, image_dimension_z: int):
         self.folder = folder
         self.subfolder = subfolder
@@ -62,9 +62,9 @@ class Saver:
         label_data = np.cast[np.int8](label_data)
 
         augment_margin = [
-            int(config.IMAGE_DIMENSION_X * config.AUGMENTATIO_SHIFT_MARGIN), 
-            int(config.IMAGE_DIMENSION_Y * config.AUGMENTATIO_SHIFT_MARGIN), 
-            int(config.IMAGE_DIMENSION_Z * config.AUGMENTATIO_SHIFT_MARGIN)
+            int(config.IMAGE_DIMENSION_X * config.AUGMENTATION_SHIFT_MARGIN), 
+            int(config.IMAGE_DIMENSION_Y * config.AUGMENTATION_SHIFT_MARGIN), 
+            int(config.IMAGE_DIMENSION_Z * config.AUGMENTATION_SHIFT_MARGIN)
             ]
 
 
