@@ -1,4 +1,6 @@
-# tile dataset
+#################################
+# specification of the model
+#################################
 
 EPOCHS = 1000
 TRAIN_PASSES_PER_VALIDATION = 1
@@ -7,9 +9,6 @@ NUMBER_OF_CONV_IN_LAYER = 2
 
 KERNEL_SIZE = [3,3,3]
 
-# BACKGROUND_WEIGHT = 1  # must be calculated dynamically
-# FOREGROUND_WEIGHT = 7  # must be calculated dynamically
-
 INITIAL_LEARNING_RATE = 1e-4
 INSTANCE_NORM = False       # not supported yet
 BATCH_NORM = True
@@ -17,6 +16,8 @@ BATCH_SIZE = 4
 BATCH_NORM_MOMENTUM = 0.8
 
 GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam#args
+
+################### DataSet ###################
 
 # Option 1) HU range for pancreas in CT scans from 30 to 400
 # https://radiopaedia.org/articles/windowing-ct?lang=us
@@ -40,16 +41,16 @@ MAX_LABEL = 1
 MIN_DATA = -1
 MAX_DATA = 1
 
+CUTOUT_BORDER_FROM_PANCREAS = [0] # [0, 30, 60, 90]
+
+IS_TILE = False
+
+################### xxxxxxxxxxx ###################
+
 MONITOR_METRIC = "val_custom_f1"
 MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"
-
-IMAGE_ORIGINAL_DIMENSION_X = 512
-IMAGE_ORIGINAL_DIMENSION_Y = IMAGE_ORIGINAL_DIMENSION_X
-IMAGE_ORIGINAL_DIMENSION_Z = IMAGE_ORIGINAL_DIMENSION_X
-
-IS_TILE = True
 
 # Dataset used for training
 # consists of pickle files of 3d numpy arrays

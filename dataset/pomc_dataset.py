@@ -47,7 +47,7 @@ class POMCDataset:
         self.min_HU = float("inf")
         self.max_HU = float("-inf")
 
-        # self.saver = SaverFactory(config.IS_TILE)
+        self.saver = SaverFactory()("tiled" if config.IS_TILE == True else "no_tiled")
 
     def get_patient_id_from_folder(self, folder):
         result = None
@@ -284,8 +284,6 @@ class POMCDataset:
         return result
 
     def pickle_src_data(self, train_valid_percentage=0.15):
-        saver = SaverFactory()("tiled" if config.IS_TILE == True else "no_tiled")
-
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
@@ -326,25 +324,27 @@ class POMCDataset:
                 print("ERROR: data & labels are not consistent patient_id:", patient_id)
                 continue
 
-            for percentage in [0]:   # [0, 30, 60, 90]:
+            for percentage in config.CUTOUT_BORDER_FROM_PANCREAS:
                 print(f"\n\tPreprocess data for {percentage}%")
 
                 if config.IS_TILE == False:
                     # scale data down to training size (augment border + resize)
                     scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
-                scaled_data, scaled_label = tf.constant(src_data), tf.constant(label_data)
+                elif config.IS_TILE == True:
+                    scaled_data, scaled_label = tf.constant(src_data), tf.constant(label_data)
+                else:
+                    print("ERROR: unknown IS_TILE value:", config.IS_TILE)
+                    continue
 
                 start_ts = time.time()
                 scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data.numpy(), scaled_label.numpy())
                 print("\tPreprocess data in {:.2f} sec".format(time.time() - start_ts))
 
-
                 if DEBUG:
-                    print("\tData")
+                    print("\tData statistics:")
                     self.print_statistic(src_data, scaled_src_data)
-                    print("\tLabel")
+                    print("\tLabel statistics:")
                     self.print_statistic(label_data, scaled_label_data)
-
 
                 if self.sanity_check_after_preprocessing(scaled_src_data, scaled_label_data) == False:
                     print("ERROR: data or label failed sanity check")
@@ -355,7 +355,7 @@ class POMCDataset:
                 #     continue
 
                 print(f"\tSave patientID: {patient_id} to {subfolder} with border cut out around pancreas at {percentage}%")
-                saver_obj = saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+                saver_obj = self.saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
                 if saver_obj.save(scaled_src_data, scaled_label_data) == False:
                     print("ERROR: can't save sliced CT of patientID:", patient_id)
                     continue

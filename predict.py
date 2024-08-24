@@ -7,6 +7,7 @@ import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
 import config as config
+from tools.predict.factory import PredictFactory
 from tools.predict.predict_no_tile import PredictNoTile
 from tools.predict.predict_tile import PredictTile
 
@@ -39,10 +40,6 @@ class Predict:
         return result
 
     def __preprocess_data(self, data):
-        data = resize_3d.resize_3d_image(data, tf.constant(
-            [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
-        data = tf.cast(data, tf.float32)
-
         #
         # keep CT HU in range [pancreas HU]
         #
@@ -117,14 +114,24 @@ class Predict:
 
         return affine
 
-    def __resize_segmentation_to_dcm_shape(self, mask, dcm_slices):
-        dcm_rows = dcm_slices[0][0x0028, 0x0010].value
-        dcm_columns = dcm_slices[0][0x0028, 0x0011].value
-        dcm_depth = len(dcm_slices)
-        result = resize_3d.resize_3d_image(tf.squeeze(mask), tf.constant([dcm_rows, dcm_columns, dcm_depth]))
-        result = result[tf.newaxis, ..., tf.newaxis]
+    # def __scale_up(self, mask, dcm_slices):
+    #     dcm_rows = dcm_slices[0][0x0028, 0x0010].value
+    #     dcm_columns = dcm_slices[0][0x0028, 0x0011].value
+    #     dcm_depth = len(dcm_slices)
+    #     result = resize_3d.resize_3d_image(tf.squeeze(mask), tf.constant([dcm_rows, dcm_columns, dcm_depth]))
 
-        return result
+    #     return result
+
+    # def __scale_down(self, data):
+    #     if config.IS_TILE == True:
+    #         data = tf.cast(data, tf.float32)
+    #     elif config.IS_TILE == False:
+    #         data = resize_3d.resize_3d_image(data, tf.constant(
+    #             [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
+    #         data = tf.cast(data, tf.float32)
+    #     else:
+    #         raise ValueError("Unknown IS_TILE value: " + config.IS_TILE)
+    #     return data
 
     def __save_img_to_nifti(self, data, affine, result_file_name):
         # TODO: add meta information
@@ -147,30 +154,26 @@ class Predict:
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
                                                         tf.reduce_max(data), tf.reduce_sum(data)))
 
-    def __predict(self, src_data, model):
-        if config.IS_TILE == True:
-            predict_class = PredictTile(model)
-        else:
-            predict_class = PredictNoTile(model)
-
-        prediction = predict_class(src_data)
-        return prediction
 
     def main(self, dcm_folder, result_file_name):
-        dcm_slices = self.__read_dcm_slices(dcm_folder)
-        raw_pixel_data = self.__get_pixel_data(dcm_slices)
-        src_data = self.__preprocess_data(raw_pixel_data)
-
         model = craft_network.craft_network(config.MODEL_CHECKPOINT)
-        # model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
-
         # model.summary()
 
-        # prediction = model.predict(src_data)
-        prediction = self.__predict(src_data, model)
+        predict_class = PredictFactory()("tile" if config.IS_TILE else "no_tile")
+        predict_obj = predict_class(model)
+
+        dcm_slices = self.__read_dcm_slices(dcm_folder)
+        raw_pixel_data = self.__get_pixel_data(dcm_slices)
+        scaled_data = predict_obj.scale_down(raw_pixel_data)
+        # scaled_data = self.__scale_down(raw_pixel_data)
+        src_data = self.__preprocess_data(scaled_data)
+
+        prediction = predict_obj.predict(src_data)
+
         mask = self.__create_segmentation(prediction)
-        mask = self.__resize_segmentation_to_dcm_shape(mask, dcm_slices)
         mask = tf.squeeze(mask)
+        mask = predict_obj.scale_up(mask)
+        # mask = self.__scale_up(mask, dcm_slices)
         affine_matrix = self.__get_affine_matrix(dcm_slices)
 
         self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix, result_file_name)
