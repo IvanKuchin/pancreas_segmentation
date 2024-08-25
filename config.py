@@ -12,7 +12,7 @@ KERNEL_SIZE = [3,3,3]
 INITIAL_LEARNING_RATE = 1e-4
 INSTANCE_NORM = False       # not supported yet
 BATCH_NORM = True
-BATCH_SIZE = 1
+BATCH_SIZE = 4
 BATCH_NORM_MOMENTUM = 0.8
 
 GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam#args
@@ -30,7 +30,7 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 PANCREAS_MIN_HU =  -512    # -512
 PANCREAS_MAX_HU =  1024    # 1024
 
-IMAGE_DIMENSION_X = 160
+IMAGE_DIMENSION_X = 96
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
 IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
 
@@ -43,7 +43,7 @@ MAX_DATA = 1
 
 CUTOUT_BORDER_FROM_PANCREAS = [0] # [0, 30, 60, 90]
 
-IS_TILE = False
+IS_TILE = True
 
 ################### xxxxxxxxxxx ###################
 

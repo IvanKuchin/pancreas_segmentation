@@ -55,10 +55,10 @@ class Predict:
 
         return data
 
-    def __create_segmentation(self, data):
-        mask = tf.argmax(data, axis = -1)
-        mask = mask[..., tf.newaxis]
-        return mask
+    # def __create_segmentation(self, data):
+    #     mask = tf.argmax(data, axis = -1)
+    #     mask = mask[..., tf.newaxis]
+    #     return mask
 
     def __get_patient_position_from_first_frame(self, dcm_slices):
         min_number = dcm_slices[0][0x0020, 0x0013].value
@@ -70,7 +70,7 @@ class Predict:
 
         return dcm_slices[min_idx][0x0020, 0x0032].value
 
-    def __get_affine_matrix(self, dcm_slices):
+    def __get_metadata(self, dcm_slices):
         result = []
         dcm_rows = dcm_slices[0][0x0028, 0x0010].value
         dcm_columns = dcm_slices[0][0x0028, 0x0011].value
@@ -112,7 +112,7 @@ class Predict:
         affine[0, 3] = -affine[0, 3]
         affine[1, 3] = -affine[1, 3]
 
-        return affine
+        return {"affine": affine, "spacing": dcm_pixel_spacing, "dim": [dcm_rows, dcm_columns, dcm_depth]}
 
     # def __scale_up(self, mask, dcm_slices):
     #     dcm_rows = dcm_slices[0][0x0028, 0x0010].value
@@ -133,7 +133,7 @@ class Predict:
     #         raise ValueError("Unknown IS_TILE value: " + config.IS_TILE)
     #     return data
 
-    def __save_img_to_nifti(self, data, affine, result_file_name):
+    def __save_img_to_nifti(self, data, meta, result_file_name):
         # TODO: add meta information
         # affine = meta['affine'][0].cpu().numpy()
         # pixdim = meta['pixdim'][0].cpu().numpy()
@@ -143,8 +143,11 @@ class Predict:
         # img.header['dim'] = dim
         # img.header['pixdim'] = pixdim
 
-        img_to_save = nib.Nifti1Image(data, affine)
-        nib.save(img_to_save, result_file_name)
+        img = nib.Nifti1Image(data, meta["affine"])
+        # img.header['dim'] = meta["dim"]
+        # img.header['pixdim'] = meta["spacing"]
+
+        nib.save(img, result_file_name)
 
     def __print_stat(self, data, title=""):
         if len(title):
@@ -168,19 +171,19 @@ class Predict:
         # scaled_data = self.__scale_down(raw_pixel_data)
         src_data = self.__preprocess_data(scaled_data)
 
-        prediction = predict_obj.predict(src_data)
+        mask = predict_obj.predict(src_data)
 
-        mask = self.__create_segmentation(prediction)
-        mask = tf.squeeze(mask)
+        # mask = self.__create_segmentation(mask)
+        # mask = tf.squeeze(mask)
         mask = predict_obj.scale_up(mask)
         # mask = self.__scale_up(mask, dcm_slices)
-        affine_matrix = self.__get_affine_matrix(dcm_slices)
+        metadata = self.__get_metadata(dcm_slices)
 
-        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix, result_file_name)
+        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), metadata, result_file_name)
 
         self.__print_stat(src_data, "src CT data")
         self.__print_stat(mask, "mask")
-        print(affine_matrix)
+        print(metadata)
 
 
 if __name__ == "__main__":
