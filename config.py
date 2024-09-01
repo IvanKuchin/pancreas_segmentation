@@ -60,3 +60,13 @@ TFRECORD_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/dataset/"
 # consists of dicom and nrrd files
 POMC_PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"
 POMC_LABELS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/local_training"
+
+######################################
+##### Slice thicknes calculation #####
+# https://stackoverflow.com/questions/21759013/dicom-affine-matrix-transformation-from-image-space-to-patient-space-in-matlab
+THICKNESS = "strange"
+
+# https://nipy.org/nibabel/dicom/dicom_orientation.html#dicom-voxel-to-patient-coordinate-system-mapping
+# THICKNESS = "nibabel"
+
+#######################################

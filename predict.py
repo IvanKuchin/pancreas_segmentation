@@ -2,6 +2,7 @@ import tensorflow as tf
 import glob
 import os
 import pydicom
+from dataset.thickness.factory import ThicknessFactory
 from tools import resize_3d
 import numpy as np
 import nibabel as nib
@@ -76,11 +77,12 @@ class Predict:
         dcm_columns = dcm_slices[0][0x0028, 0x0011].value
         dcm_depth = len(dcm_slices)
         dcm_pixel_spacing = dcm_slices[0][0x0028, 0x0030].value
-        dcm_instance_number_1 = dcm_slices[0][0x0020, 0x0013].value
-        dcm_instance_number_2 = dcm_slices[1][0x0020, 0x0013].value
-        dcm_patient_pos_1 = dcm_slices[0][0x0020, 0x0032].value[2]
-        dcm_patient_pos_2 = dcm_slices[1][0x0020, 0x0032].value[2]
-        dcm_slice_thickness = (dcm_patient_pos_2 - dcm_patient_pos_1) / (dcm_instance_number_2 - dcm_instance_number_1)
+
+        thickness_func = ThicknessFactory(config.THICKNESS)
+        dcm_slice_thickness_0 = thickness_func(dcm_slices, 0)
+        dcm_slice_thickness_1 = thickness_func(dcm_slices, 1)
+        dcm_slice_thickness_2 = thickness_func(dcm_slices, 2)
+
         dcm_patient_orientation = dcm_slices[0][0x0020, 0x0037].value
         dcm_patient_position = self.__get_patient_position_from_first_frame(dcm_slices)
 
@@ -97,7 +99,9 @@ class Predict:
         affine[1, 3] = dcm_patient_position[1]
         affine[2, 3] = dcm_patient_position[2]
 
-        affine[2, 2] = dcm_slice_thickness
+        affine[2, 0] = dcm_slice_thickness_0
+        affine[2, 1] = dcm_slice_thickness_1
+        affine[2, 2] = dcm_slice_thickness_2
 
         # --- inverse axes X and Y. This was found experimental way
         # --- could be wrong ... 
@@ -153,7 +157,7 @@ class Predict:
         if len(title):
             print('-' * 25, title, '-' * 25)
         print("shape", data.shape)
-        print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data),
+        print("min/mean/max/sum {}/{:.5f}/{}/{}".format(tf.reduce_min(data),
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
                                                         tf.reduce_max(data), tf.reduce_sum(data)))
 
