@@ -12,12 +12,14 @@ KERNEL_SIZE = [3,3,3]
 INITIAL_LEARNING_RATE = 1e-4
 INSTANCE_NORM = False       # not supported yet
 BATCH_NORM = True
-BATCH_SIZE = 4
+BATCH_SIZE = 1
 BATCH_NORM_MOMENTUM = 0.8
 
 GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam#args
 
 ################### DataSet ###################
+
+VALIDATION_PERCENTAGE = 0.15
 
 # Option 1) HU range for pancreas in CT scans from 30 to 400
 # https://radiopaedia.org/articles/windowing-ct?lang=us
@@ -30,7 +32,7 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 PANCREAS_MIN_HU =  -512    # -512
 PANCREAS_MAX_HU =  1024    # 1024
 
-IMAGE_DIMENSION_X = 96
+IMAGE_DIMENSION_X = 160
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
 IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
 
@@ -43,7 +45,7 @@ MAX_DATA = 1
 
 CUTOUT_BORDER_FROM_PANCREAS = [0] # [0, 30, 60, 90]
 
-IS_TILE = True
+IS_TILE = False
 
 ################### xxxxxxxxxxx ###################
 

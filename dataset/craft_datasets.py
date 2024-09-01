@@ -18,17 +18,16 @@ from dataset import borders
 DEBUG_DATALOADER = False
 DEBUG_DATA_LOADING_PERFORMANCE = False
 
-def fname_to_patientid(fname_src:str):
+def fname_from_full_path(fname_src:str):
     if DEBUG_DATALOADER:
-        print("==========", fname_src)
+        print("fname_to_patientid: ", fname_src)
     fname = fname_src.split(os.path.sep)[-1]
-    patient_id = fname.split(sep = "_data")[0]
-    return patient_id
+    return fname
 
 
 def py_read_data_and_label(data_fname:str):
     if DEBUG_DATALOADER:
-        print("data_fname:", data_fname)
+        print("py_read_data_and_label:", data_fname)
     with np.load(data_fname) as content:
         data_label = content["arr_0"]
     data_array = data_label[0]
@@ -41,7 +40,7 @@ def read_data_and_label(patient_id:str, src_folder:str):
     :type src_folder: basestring
     """
     if DEBUG_DATALOADER:
-        print("src_folder:", src_folder, "patient_id:", patient_id)
+        print("read_data_and_label: src_folder:", src_folder, "patient_id:", patient_id)
     data_fname  = os.path.join(src_folder, patient_id)
     data_array, label_array = py_read_data_and_label(data_fname) #, Tout = (tf.float32, tf.int32))
 
@@ -88,8 +87,10 @@ class Array3d_read_and_resize:
     def __call__(self):
         self.file_list = FileIterator(self.folder)
         for data_file in self.file_list:
-            # print("file:", data_file)
-            patient_id = fname_to_patientid(data_file)
+            if DEBUG_DATALOADER:
+                print("__call__: file:", data_file)
+
+            patient_id = fname_from_full_path(data_file)
 
             start_reading = time.time()
             data, label = read_data_and_label(patient_id, self.folder)

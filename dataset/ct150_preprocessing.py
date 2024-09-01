@@ -5,11 +5,19 @@ import glob
 import os
 import re
 import nibabel
+import sys
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+from dataset.savers.factory import SaverFactory
 from tools import resize_3d
 import config as config
 
-PATIENTS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/data/"
-LABELS_SRC_FOLDER = "/docs/src/kt/datasets/ct-150/labels/"
+PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/ds2-tcia/data/"
+LABELS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/ds2-tcia/labels/"
 INPUT_DIMS = np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
 AUGMENT_SCALE_FACTOR = 0.1
 AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
@@ -29,6 +37,8 @@ class CT150:
         self.patients_src_folder = patients_src_folder
         self.labels_src_folder = labels_src_folder
         self.TFRECORD_FOLDER = TFRECORD_FOLDER
+
+        self.saver = SaverFactory()("tiled" if config.IS_TILE == True else "no_tiled")
 
     def GetPatientIDFromFolder(self, folder):
         result = None
@@ -108,8 +118,19 @@ class CT150:
             f.write(example_proto.SerializeToString())
             # f.write(tf.io.serialize_tensor(scaled_data))
 
-        np.save(config.TFRECORD_FOLDER + patient_id + "_data.npy", scaled_data)
-        np.save(config.TFRECORD_FOLDER + patient_id + "_label.npy", scaled_label)
+        # scaled_data = np.cast[np.float32](scaled_data)
+        # scaled_label = np.cast[np.int8](scaled_label)
+        # np.savez_compressed(config.TFRECORD_FOLDER + patient_id + ".npz", [scaled_data, scaled_label])
+
+        percentage = 0
+        train_valid_percentage = config.VALIDATION_PERCENTAGE
+        subfolder = "train" if np.random.rand() > train_valid_percentage else "valid"
+
+        print(f"\tSave patientID: {patient_id} to {subfolder} with border cut out around pancreas at {percentage}%")
+        saver_obj = self.saver(self.TFRECORD_FOLDER, subfolder, patient_id, percentage, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+        if saver_obj.save(scaled_data, scaled_label) == False:
+            print("ERROR: can't save sliced CT of patientID:", patient_id)
+            result = False
 
         return result
 
@@ -159,10 +180,10 @@ class CT150:
         data[data_idx2] = config.PANCREAS_MAX_HU
 
         #
-        # Assign -1 to mask that is outside of pancreas HU
+        # Assign 0 to mask that is outside of pancreas HU
         #
-        label[data_idx1] = -1
-        label[data_idx2] = -1
+        # label[data_idx1] = 0
+        # label[data_idx2] = 0
 
         data_zoomed = resize_3d.resize_3d_image(data, AUGMENT_SCALED_DIMS)
         label_zoomed = resize_3d.resize_3d_image(label, AUGMENT_SCALED_DIMS)
@@ -205,7 +226,7 @@ class CT150:
         else:
             if np.min(label) != 0:
                 result = False
-                print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
+                print("ERROR: (min(label) == {}) != 0".format(np.min(label)))
 
         if np.mean(label) == 0:
             result = False
