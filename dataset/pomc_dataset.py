@@ -283,7 +283,7 @@ class POMCDataset:
 
         return result
 
-    def pickle_src_data(self, train_valid_percentage=0.15):
+    def pickle_src_data(self, train_valid_percentage=config.VALIDATION_PERCENTAGE):
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
