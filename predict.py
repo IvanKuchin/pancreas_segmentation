@@ -2,11 +2,13 @@ import tensorflow as tf
 import glob
 import os
 import pydicom
+from dataset.thickness.factory import ThicknessFactory
 from tools import resize_3d
 import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
 import config as config
+from tools.predict.factory import PredictFactory
 from tools.predict.predict_no_tile import PredictNoTile
 from tools.predict.predict_tile import PredictTile
 
@@ -39,10 +41,6 @@ class Predict:
         return result
 
     def __preprocess_data(self, data):
-        data = resize_3d.resize_3d_image(data, tf.constant(
-            [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
-        data = tf.cast(data, tf.float32)
-
         #
         # keep CT HU in range [pancreas HU]
         #
@@ -58,10 +56,10 @@ class Predict:
 
         return data
 
-    def __create_segmentation(self, data):
-        mask = tf.argmax(data, axis = -1)
-        mask = mask[..., tf.newaxis]
-        return mask
+    # def __create_segmentation(self, data):
+    #     mask = tf.argmax(data, axis = -1)
+    #     mask = mask[..., tf.newaxis]
+    #     return mask
 
     def __get_patient_position_from_first_frame(self, dcm_slices):
         min_number = dcm_slices[0][0x0020, 0x0013].value
@@ -73,17 +71,18 @@ class Predict:
 
         return dcm_slices[min_idx][0x0020, 0x0032].value
 
-    def __get_affine_matrix(self, dcm_slices):
+    def __get_metadata(self, dcm_slices):
         result = []
         dcm_rows = dcm_slices[0][0x0028, 0x0010].value
         dcm_columns = dcm_slices[0][0x0028, 0x0011].value
         dcm_depth = len(dcm_slices)
         dcm_pixel_spacing = dcm_slices[0][0x0028, 0x0030].value
-        dcm_instance_number_1 = dcm_slices[0][0x0020, 0x0013].value
-        dcm_instance_number_2 = dcm_slices[1][0x0020, 0x0013].value
-        dcm_patient_pos_1 = dcm_slices[0][0x0020, 0x0032].value[2]
-        dcm_patient_pos_2 = dcm_slices[1][0x0020, 0x0032].value[2]
-        dcm_slice_thickness = (dcm_patient_pos_2 - dcm_patient_pos_1) / (dcm_instance_number_2 - dcm_instance_number_1)
+
+        thickness_func = ThicknessFactory(config.THICKNESS)
+        dcm_slice_thickness_0 = thickness_func(dcm_slices, 0)
+        dcm_slice_thickness_1 = thickness_func(dcm_slices, 1)
+        dcm_slice_thickness_2 = thickness_func(dcm_slices, 2)
+
         dcm_patient_orientation = dcm_slices[0][0x0020, 0x0037].value
         dcm_patient_position = self.__get_patient_position_from_first_frame(dcm_slices)
 
@@ -100,7 +99,9 @@ class Predict:
         affine[1, 3] = dcm_patient_position[1]
         affine[2, 3] = dcm_patient_position[2]
 
-        affine[2, 2] = dcm_slice_thickness
+        affine[2, 0] = dcm_slice_thickness_0
+        affine[2, 1] = dcm_slice_thickness_1
+        affine[2, 2] = dcm_slice_thickness_2
 
         # --- inverse axes X and Y. This was found experimental way
         # --- could be wrong ... 
@@ -115,18 +116,28 @@ class Predict:
         affine[0, 3] = -affine[0, 3]
         affine[1, 3] = -affine[1, 3]
 
-        return affine
+        return {"affine": affine, "spacing": dcm_pixel_spacing, "dim": [dcm_rows, dcm_columns, dcm_depth]}
 
-    def __resize_segmentation_to_dcm_shape(self, mask, dcm_slices):
-        dcm_rows = dcm_slices[0][0x0028, 0x0010].value
-        dcm_columns = dcm_slices[0][0x0028, 0x0011].value
-        dcm_depth = len(dcm_slices)
-        result = resize_3d.resize_3d_image(tf.squeeze(mask), tf.constant([dcm_rows, dcm_columns, dcm_depth]))
-        result = result[tf.newaxis, ..., tf.newaxis]
+    # def __scale_up(self, mask, dcm_slices):
+    #     dcm_rows = dcm_slices[0][0x0028, 0x0010].value
+    #     dcm_columns = dcm_slices[0][0x0028, 0x0011].value
+    #     dcm_depth = len(dcm_slices)
+    #     result = resize_3d.resize_3d_image(tf.squeeze(mask), tf.constant([dcm_rows, dcm_columns, dcm_depth]))
 
-        return result
+    #     return result
 
-    def __save_img_to_nifti(self, data, affine, result_file_name):
+    # def __scale_down(self, data):
+    #     if config.IS_TILE == True:
+    #         data = tf.cast(data, tf.float32)
+    #     elif config.IS_TILE == False:
+    #         data = resize_3d.resize_3d_image(data, tf.constant(
+    #             [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
+    #         data = tf.cast(data, tf.float32)
+    #     else:
+    #         raise ValueError("Unknown IS_TILE value: " + config.IS_TILE)
+    #     return data
+
+    def __save_img_to_nifti(self, data, meta, result_file_name):
         # TODO: add meta information
         # affine = meta['affine'][0].cpu().numpy()
         # pixdim = meta['pixdim'][0].cpu().numpy()
@@ -136,48 +147,47 @@ class Predict:
         # img.header['dim'] = dim
         # img.header['pixdim'] = pixdim
 
-        img_to_save = nib.Nifti1Image(data, affine)
-        nib.save(img_to_save, result_file_name)
+        img = nib.Nifti1Image(data, meta["affine"])
+        # img.header['dim'] = meta["dim"]
+        # img.header['pixdim'] = meta["spacing"]
+
+        nib.save(img, result_file_name)
 
     def __print_stat(self, data, title=""):
         if len(title):
             print('-' * 25, title, '-' * 25)
         print("shape", data.shape)
-        print("min/mean/max/sum {}/{:.2f}/{}/{}".format(tf.reduce_min(data),
+        print("min/mean/max/sum {}/{:.5f}/{}/{}".format(tf.reduce_min(data),
                                                         tf.reduce_mean(tf.cast(data, dtype = tf.float32)),
                                                         tf.reduce_max(data), tf.reduce_sum(data)))
 
-    def __predict(self, src_data, model):
-        if config.IS_TILE == True:
-            predict_class = PredictTile(model)
-        else:
-            predict_class = PredictNoTile(model)
-
-        prediction = predict_class(src_data)
-        return prediction
 
     def main(self, dcm_folder, result_file_name):
-        dcm_slices = self.__read_dcm_slices(dcm_folder)
-        raw_pixel_data = self.__get_pixel_data(dcm_slices)
-        src_data = self.__preprocess_data(raw_pixel_data)
-
         model = craft_network.craft_network(config.MODEL_CHECKPOINT)
-        # model = tf.keras.models.load_model("pancreas_segmentation_model.h5", compile=False)
-
         # model.summary()
 
-        # prediction = model.predict(src_data)
-        prediction = self.__predict(src_data, model)
-        mask = self.__create_segmentation(prediction)
-        mask = self.__resize_segmentation_to_dcm_shape(mask, dcm_slices)
-        mask = tf.squeeze(mask)
-        affine_matrix = self.__get_affine_matrix(dcm_slices)
+        predict_class = PredictFactory()("tile" if config.IS_TILE else "no_tile")
+        predict_obj = predict_class(model)
 
-        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), affine_matrix, result_file_name)
+        dcm_slices = self.__read_dcm_slices(dcm_folder)
+        raw_pixel_data = self.__get_pixel_data(dcm_slices)
+        scaled_data = predict_obj.scale_down(raw_pixel_data)
+        # scaled_data = self.__scale_down(raw_pixel_data)
+        src_data = self.__preprocess_data(scaled_data)
+
+        mask = predict_obj.predict(src_data)
+
+        # mask = self.__create_segmentation(mask)
+        # mask = tf.squeeze(mask)
+        mask = predict_obj.scale_up(mask)
+        # mask = self.__scale_up(mask, dcm_slices)
+        metadata = self.__get_metadata(dcm_slices)
+
+        self.__save_img_to_nifti(np.asarray(mask.numpy(), dtype = np.uint8), metadata, result_file_name)
 
         self.__print_stat(src_data, "src CT data")
         self.__print_stat(mask, "mask")
-        print(affine_matrix)
+        print(metadata)
 
 
 if __name__ == "__main__":
