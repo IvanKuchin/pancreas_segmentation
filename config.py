@@ -17,6 +17,8 @@ BATCH_NORM_MOMENTUM = 0.8
 
 GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam#args
 
+LOSS_FUNCTION = "dice" # "dice" or "scce"
+
 ################### DataSet ###################
 
 VALIDATION_PERCENTAGE = 0.15

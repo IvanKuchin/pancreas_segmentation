@@ -72,6 +72,13 @@ def __weighted_loss(y_true, y_pred):
 
     return loss
 
+def __loss_func(loss_name):
+    if loss_name == "dice":
+        return __dice_loss
+    elif loss_name == "scce":
+        return __weighted_loss
+    else:
+        raise ValueError("Unknown loss function")
 
 def main():
     ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
@@ -104,7 +111,7 @@ def main():
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
                                                         # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
-                  loss = __dice_loss,
+                  loss = __loss_func(config.LOSS_FUNCTION),
                   metrics = [
                       'accuracy',
                       CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
