@@ -57,8 +57,8 @@ def __weighted_loss(y_true, y_pred):
     foreground_size = tf.reduce_sum(tf.cast(y_true == 1.0, y_true.dtype))
     background_size = tf.reduce_sum(tf.cast(y_true == 0.0, y_true.dtype))
     size = tf.cast(tf.size(y_true), dtype = tf.float32)
-    foreground_weight = (1.0 - foreground_size / size) / 2.0 * scaler
-    background_weight = (1.0 - background_size / size) / 2.0
+    foreground_weight = (1.0 - foreground_size / size) * scaler
+    background_weight = (1.0 - background_size / size)
     # foreground and background weights must add up to 1 
     # it will be added/reversed later
     foreground_weight -= background_weight

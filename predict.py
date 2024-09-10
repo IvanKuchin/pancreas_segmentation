@@ -113,6 +113,10 @@ class Predict:
         affine[1, 1] = -affine[1, 1]
         affine[2, 1] = -affine[2, 1]
 
+        affine[0, 2] = -affine[0, 2]
+        affine[1, 2] = -affine[1, 2]
+        affine[2, 2] = -affine[2, 2]
+
         affine[0, 3] = -affine[0, 3]
         affine[1, 3] = -affine[1, 3]
 
