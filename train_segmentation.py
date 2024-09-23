@@ -121,6 +121,7 @@ def main():
                       CategoricalMetric(tf.keras.metrics.Accuracy(), name = 'custom_accuracy'),
                       CategoricalMetric(tf.keras.metrics.Precision(), name = 'custom_precision'),
                       CategoricalMetric(tf.keras.metrics.Recall(), name = 'custom_recall'),
+                      CategoricalMetric(tf.keras.metrics.MeanIoU(num_classes=2), name = 'custom_MeanIoU'),
                       CategoricalF1(name = 'custom_f1'),
                       CustomReduceMetric(what = "y_true", reduce = "max", name = 'custom_max_y_true'),
                       CustomReduceMetric(what = "y_pred", reduce = "max", name = 'custom_max_y_pred'),
