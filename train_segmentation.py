@@ -22,7 +22,7 @@ def get_csv_dir():
 
 
 def __dice_coef(y_true, y_pred):
-    gamma = 0.01
+    gamma = 1.0
     y_true = tf.cast(y_true, dtype = tf.float32)
     y_pred = tf.cast(y_pred[..., 1:2], dtype = tf.float32)
 
