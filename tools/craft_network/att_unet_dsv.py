@@ -56,7 +56,7 @@ def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instance
     output_layer = tf.keras.layers.Conv3D(2, kernel_size = 1, padding = "same", kernel_initializer = "he_uniform", activation="softmax")(concat_layer)
     # output_layer = tf.keras.activations.softmax(output_layer)
 
-    model = tf.keras.models.Model(inputs = [inputs], outputs = output_layer)
+    model = tf.keras.models.Model(inputs = inputs, outputs = output_layer)
 
     if checkpoint_file and os.path.exists(checkpoint_file):
         print("Loading weights from checkpoint ", checkpoint_file)

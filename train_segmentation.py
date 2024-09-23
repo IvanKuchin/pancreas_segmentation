@@ -102,7 +102,7 @@ def main():
                                                                 monitor = config.MONITOR_METRIC,
                                                                 patience = 30,
                                                                 cooldown = 10,
-                                                                min_lr = 0.000001,
+                                                                min_lr = 0.0001,
                                                                 verbose = 1,
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
