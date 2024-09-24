@@ -16,7 +16,7 @@ from dataset import borders
 
 
 DEBUG_DATALOADER = False
-DEBUG_DATA_LOADING_PERFORMANCE = False
+DEBUG_DATA_LOADING_PERFORMANCE = True
 
 def fname_from_full_path(fname_src:str):
     if DEBUG_DATALOADER:
@@ -208,8 +208,8 @@ class MeasureTime:
         return latency, x
 
 def __pancreas_histogram(data, label):
-    print(f"data  histogram1: {np.histogram(data, bins = 10)}")
-    print(f"label histogram2: {np.histogram(label, bins = 10)}")
+    print(f"\tdata  histogram1: {np.histogram(data, bins = 10)}")
+    print(f"\tlabel histogram2: {np.histogram(label, bins = 10)}")
 
 
 def __run_through_data_wo_any_action(ds_train, ds_valid):

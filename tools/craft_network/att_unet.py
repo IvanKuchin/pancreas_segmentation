@@ -14,25 +14,25 @@ from tools.craft_network.att_gate import AttGate
 import config as config
 
 
-def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=False):
+def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=True):
     input_layer = tf.keras.layers.Input(shape = input_shape[1:])
 
     # primary path
-    x = tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform')(input_layer)
+    x = tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform',  kernel_regularizer=tf.keras.regularizers.l2(0.01))(input_layer)
     if (apply_batchnorm):
         x = tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM)(x)
     x = tf.keras.layers.LeakyReLU()(x)
     if (apply_dropout):
         x = tf.keras.layers.Dropout(0.5)(x)
 
-    x = tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform')(x)
+    x = tf.keras.layers.Conv3D(filters, kernel_size = kernel_size, padding = "same", kernel_initializer='he_uniform',  kernel_regularizer=tf.keras.regularizers.l2(0.01))(x)
     if (apply_batchnorm):
         x = tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM)(x)
 
     # residual path
     res_path = input_layer
     if (input_shape[-1] != filters):
-        res_path = tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform')(input_layer)
+        res_path = tf.keras.layers.Conv3D(filters, kernel_size = 1, padding = "same", kernel_initializer='he_uniform',  kernel_regularizer=tf.keras.regularizers.l2(0.01))(input_layer)
         if (apply_batchnorm):
             res_path = tf.keras.layers.BatchNormalization(momentum=config.BATCH_NORM_MOMENTUM)(res_path)
 
