@@ -14,7 +14,7 @@ from tools.craft_network.att_gate import AttGate
 import config as config
 
 
-def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=True):
+def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=False):
     input_layer = tf.keras.layers.Input(shape = input_shape[1:])
 
     # primary path
