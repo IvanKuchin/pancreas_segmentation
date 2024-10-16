@@ -11,6 +11,7 @@ import pydicom
 import nrrd
 import borders
 from dataset.savers.factory import SaverFactory
+from dataset.pomc_reader.factory import ReaderFactory
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -24,8 +25,15 @@ import config as config
 # AUGMENT_SCALED_DIMS = tf.cast(tf.constant(INPUT_DIMS, dtype = tf.float32) * (1 + AUGMENT_SCALE_FACTOR),
 #                               dtype = tf.int32).numpy()
 
+################### Common parameters ###################
+
 PATIENTS_SRC_FOLDER = config.POMC_PATIENTS_SRC_FOLDER
 LABELS_SRC_FOLDER   = config.POMC_LABELS_SRC_FOLDER
+
+################### Classification parameters ###################
+
+CLASSIFICATION_SEGMENTATION_MASK_FILENAME = "segmentation.nii.gz"
+CLASSIFICATION_LABEL_FILENAME = "label"
 
 DEBUG = True
 
@@ -104,7 +112,7 @@ class POMCDataset:
         if len(file_list):
             result, metadata = self.read_dicom_data_from_files(file_list)
             if result.shape[0]:
-                # --- nothing to do
+                # --- normal return
                 return result, metadata
             else:
                 print("ERROR: reading DICOM data from files:", file_list)
@@ -114,6 +122,7 @@ class POMCDataset:
                 if os.path.isdir(f):
                     result = self.get_dicom_data(f)
 
+        # --- recursive return only
         return result
 
     def get_nrrd_data(self, folder):
@@ -122,7 +131,7 @@ class POMCDataset:
         if len(file_list):
             result, metadata = self.read_nrrd_data_from_files(file_list)
             if result.shape[0]:
-                # --- nothing to do
+                # --- normal return
                 return result, metadata
             else:
                 print("ERROR: reading nrrd data from files:", file_list)
@@ -132,6 +141,7 @@ class POMCDataset:
                 if os.path.isdir(f):
                     result = self.get_nrrd_data(f)
 
+        # --- recursive return only
         return result
 
     def _point_inside_box(self, min, max, point):
@@ -284,6 +294,9 @@ class POMCDataset:
         return result
 
     def pickle_src_data(self, train_valid_percentage=config.VALIDATION_PERCENTAGE):
+        reader = ReaderFactory()(config.TASK_TYPE)
+
+
         if not os.path.exists(self.TFRECORD_FOLDER):
             print("ERROR: can't find TFRecord folder:", self.TFRECORD_FOLDER)
             return
@@ -295,10 +308,12 @@ class POMCDataset:
         folder_list = glob.glob(os.path.join(self.patients_src_folder, "*"))
 
         for folder in folder_list:
+            if not os.path.isdir(folder):
+                continue
+
             subfolder = "train" if np.random.rand() > train_valid_percentage else "valid"
 
             patient_id = self.get_patient_id_from_folder(folder)
-
             if len(patient_id) == 0:
                 print("ERROR: identifying patient_id from folder:", folder)
                 continue

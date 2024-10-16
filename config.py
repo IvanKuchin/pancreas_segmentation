@@ -19,6 +19,13 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 
 LOSS_FUNCTION = "dice" # "dice" or "scce"
 
+MONITOR_METRIC = "val_custom_f1"
+MONITOR_MODE = "max"
+
+MODEL_CHECKPOINT = "checkpoints/weights.keras"
+
+TASK_TYPE = "classification" # "segmentation" or "classification"
+
 ################### DataSet ###################
 
 VALIDATION_PERCENTAGE = 0.15
@@ -50,11 +57,6 @@ CUTOUT_BORDER_FROM_PANCREAS = [0] # [0, 30, 60, 90]
 IS_TILE = False
 
 ################### xxxxxxxxxxx ###################
-
-MONITOR_METRIC = "val_custom_f1"
-MONITOR_MODE = "max"
-
-MODEL_CHECKPOINT = "checkpoints/weights.keras"
 
 # Dataset used for training
 # consists of pickle files of 3d numpy arrays
