@@ -24,7 +24,7 @@ MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"
 
-TASK_TYPE = "classification" # "segmentation" or "classification"
+TASK_TYPE = "segmentation" # "segmentation" or "classification"
 
 ################### DataSet ###################
 
@@ -52,7 +52,7 @@ MAX_LABEL = 1
 MIN_DATA = -1
 MAX_DATA = 1
 
-CUTOUT_BORDER_FROM_PANCREAS = [0] # [0, 30, 60, 90]
+CUTOUT_BORDER_FROM_PANCREAS = [90] # [0, 30, 60, 90]
 
 IS_TILE = False
 

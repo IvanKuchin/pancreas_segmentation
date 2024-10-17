@@ -44,11 +44,11 @@ def cutout_and_resize_tensor(tensor, top_left, bottom_right):
 # pancreas volume from [10,10,10] to [90,90,90]  
 # if all percentages 0.1 (which is 10%) then
 # the cut will be from [1,1,1] to [99,99,99]
-def cut_and_resize_including_pancreas(data, label, top_left_percentage, bottom_right_percentage):
+def cut_and_resize_including_pancreas(data, mask, top_left_percentage, bottom_right_percentage):
 
     start_prep = time.time()
-    top_left_label_position = tf.reduce_min(tf.where(label == 1), axis=0)
-    bottom_right_label_position = tf.reduce_max(tf.where(label == 1), axis=0)
+    top_left_label_position = tf.reduce_min(tf.where(mask == 1), axis=0)
+    bottom_right_label_position = tf.reduce_max(tf.where(mask == 1), axis=0)
     # random_offset_top_left = tf.random.uniform(shape = [3], minval = [0.0, 0.0, 0.0], maxval = tf.cast(top_left_label_position, dtype=tf.float32))
     top_left_offset = top_left_percentage * tf.cast(top_left_label_position, dtype=tf.float32)
     top_left_offset = tf.cast(top_left_offset, dtype = tf.int32)
@@ -60,7 +60,7 @@ def cut_and_resize_including_pancreas(data, label, top_left_percentage, bottom_r
     if DEBUG_DATALOADER:
         print("\tpancreas shape:", (bottom_right_label_position - top_left_label_position).numpy())
         print("\ttop_left_label_position:", top_left_label_position.numpy(), "bottom_right_label_position:", bottom_right_label_position.numpy())
-        print(f"\toriginal shape: {label.shape}")
+        print(f"\toriginal shape: {mask.shape}")
         print(f"\tpercentages: top_left: {top_left_percentage:.2f}, bottom_right: {bottom_right_percentage:.2f}")
         print("\toffset_top_left:", top_left_offset.numpy(), "bottom_right_offset:", bottom_right_offset.numpy())
         print("\tslice shape:", (bottom_right_offset - top_left_offset + 1).numpy())
@@ -70,7 +70,7 @@ def cut_and_resize_including_pancreas(data, label, top_left_percentage, bottom_r
     finish_data = time.time()
 
     start_label = time.time()
-    _label = cutout_and_resize_tensor(label, top_left_offset, bottom_right_offset)
+    _label = cutout_and_resize_tensor(mask, top_left_offset, bottom_right_offset)
     finish_label = time.time()
 
     if DEBUG_DATA_LOADING_PERFORMANCE:

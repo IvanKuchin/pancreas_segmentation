@@ -1,8 +1,7 @@
 import dataset.pomc_reader.classification
 import dataset.pomc_reader.segmentation
 
-class ReaderFactory:
-    def __call__(self, type:str):
+def reader_factory(type:str):
         if type == "segmentation":
             return dataset.pomc_reader.segmentation.Reader
         elif type == "classification":
