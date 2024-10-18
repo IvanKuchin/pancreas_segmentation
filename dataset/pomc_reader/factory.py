@@ -1,10 +1,10 @@
-import dataset.pomc_reader.classification
-import dataset.pomc_reader.segmentation
+from dataset.pomc_reader import classification
+from dataset.pomc_reader import segmentation
 
 def reader_factory(type:str):
         if type == "segmentation":
-            return dataset.pomc_reader.segmentation.Reader
+            return segmentation.Reader
         elif type == "classification":
-            return dataset.pomc_reader.classification.Reader
+            return classification.Reader
         else:
             raise ValueError("Unknown reader factory type: {}".format(type))
