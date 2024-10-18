@@ -24,7 +24,7 @@ MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"
 
-TASK_TYPE = "segmentation" # "segmentation" or "classification"
+TASK_TYPE = "classification" # "segmentation" or "classification"
 
 ################### DataSet ###################
 
