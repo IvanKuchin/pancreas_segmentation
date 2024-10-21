@@ -24,6 +24,7 @@ class SaverNoTiled:
     def save(self, data, label):
         result = True
         
-        np.savez_compressed(os.path.join(self.folder, self.subfolder, self.patient_id + f"_cut-{self.percentage}.npz", ), [data, label])
+        np.savez_compressed(os.path.join(self.folder, self.subfolder, self.patient_id + f"_cut-{self.percentage}_data.npz", ), data)
+        np.savez_compressed(os.path.join(self.folder, self.subfolder, self.patient_id + f"_cut-{self.percentage}_label.npz", ), data)
         
         return result

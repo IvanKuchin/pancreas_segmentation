@@ -22,17 +22,8 @@ def fname_from_full_path(fname_src:str):
     if DEBUG_DATALOADER:
         print("fname_to_patientid: ", fname_src)
     fname = fname_src.split(os.path.sep)[-1]
+    fname = fname.split("_data")[0]
     return fname
-
-
-def py_read_data_and_label(data_fname:str) -> tuple[np.ndarray, np.ndarray]:
-    if DEBUG_DATALOADER:
-        print("py_read_data_and_label:", data_fname)
-    with np.load(data_fname) as content:
-        data_label = content["arr_0"]
-    data_array = data_label[0]
-    label_array = data_label[1]
-    return data_array, label_array
 
 
 def read_data_and_label(patient_id:str, src_folder:str) -> tuple[np.ndarray, np.ndarray]:
@@ -42,7 +33,13 @@ def read_data_and_label(patient_id:str, src_folder:str) -> tuple[np.ndarray, np.
     if DEBUG_DATALOADER:
         print("read_data_and_label: src_folder:", src_folder, "patient_id:", patient_id)
 
-    return py_read_data_and_label(os.path.join(src_folder, patient_id)) #, Tout = (tf.float32, tf.int32)
+    with np.load(os.path.join(src_folder, patient_id, "_data", ".npz")) as content:
+        data_array = content["arr_0"]
+
+    with np.load(os.path.join(src_folder, patient_id, "_label", ".npz")) as content:
+        label_array = content["arr_0"]
+
+    return data_array, label_array
 
 
 class FileIterator:
@@ -87,6 +84,9 @@ class Array3d_read_and_resize:
         for data_file in self.file_list:
             if DEBUG_DATALOADER:
                 print("__call__: file:", data_file)
+
+            if data_file.find("_data") == -1:
+                continue
 
             patient_id = fname_from_full_path(data_file)
 
