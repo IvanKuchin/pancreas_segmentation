@@ -41,9 +41,16 @@ VALIDATION_PERCENTAGE = 0.15
 PANCREAS_MIN_HU =  -512    # -512
 PANCREAS_MAX_HU =  1024    # 1024
 
-IMAGE_DIMENSION_X = 160
+# segmentation
+# IMAGE_DIMENSION_X = 160    
+# IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
+# IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
+
+# classification
+IMAGE_DIMENSION_X = 96
 IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
 IMAGE_DIMENSION_Z = IMAGE_DIMENSION_X
+
 
 AUGMENTATION_SHIFT_MARGIN = 0.1
 
@@ -75,4 +82,9 @@ THICKNESS = "strange"
 # https://nipy.org/nibabel/dicom/dicom_orientation.html#dicom-voxel-to-patient-coordinate-system-mapping
 # THICKNESS = "nibabel"
 
+#################### Classification ##################
+CLASSIFICATION_SEGMENTATION_MASK_FILENAME = "segmentation.nii.gz"
+PANCREAS_ID_IN_MASK = 7
+
+CLASSIFICATION_LABEL_FILENAME = "label"
 #######################################

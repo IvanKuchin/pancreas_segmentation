@@ -25,7 +25,7 @@ def fname_from_full_path(fname_src:str):
     return fname
 
 
-def py_read_data_and_label(data_fname:str):
+def py_read_data_and_label(data_fname:str) -> tuple[np.ndarray, np.ndarray]:
     if DEBUG_DATALOADER:
         print("py_read_data_and_label:", data_fname)
     with np.load(data_fname) as content:
@@ -35,16 +35,14 @@ def py_read_data_and_label(data_fname:str):
     return data_array, label_array
 
 
-def read_data_and_label(patient_id:str, src_folder:str):
+def read_data_and_label(patient_id:str, src_folder:str) -> tuple[np.ndarray, np.ndarray]:
     """
-    :type src_folder: basestring
+    read data and label from src_folder/patient_id.npz
     """
     if DEBUG_DATALOADER:
         print("read_data_and_label: src_folder:", src_folder, "patient_id:", patient_id)
-    data_fname  = os.path.join(src_folder, patient_id)
-    data_array, label_array = py_read_data_and_label(data_fname) #, Tout = (tf.float32, tf.int32))
 
-    return data_array, label_array
+    return py_read_data_and_label(os.path.join(src_folder, patient_id)) #, Tout = (tf.float32, tf.int32)
 
 
 class FileIterator:
