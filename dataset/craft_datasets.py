@@ -94,7 +94,6 @@ class Array3d_read_and_resize:
             data, label = read_data_and_label(patient_id, self.folder)
             finish_reading = time.time()
 
-            # data, label = self.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
             data, label = self.augment.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
 
             start_resize = time.time()
