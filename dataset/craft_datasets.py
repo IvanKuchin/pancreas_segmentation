@@ -10,6 +10,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
+from dataset.ds_augmentation.factory import augment_factory
 from tools import resize_3d
 import config as config
 from dataset import borders
@@ -22,7 +23,6 @@ def fname_from_full_path(fname_src:str):
     if DEBUG_DATALOADER:
         print("fname_to_patientid: ", fname_src)
     fname = fname_src.split(os.path.sep)[-1]
-    fname = fname.split("_data")[0]
     return fname
 
 
@@ -33,11 +33,10 @@ def read_data_and_label(patient_id:str, src_folder:str) -> tuple[np.ndarray, np.
     if DEBUG_DATALOADER:
         print("read_data_and_label: src_folder:", src_folder, "patient_id:", patient_id)
 
-    with np.load(os.path.join(src_folder, patient_id, "_data", ".npz")) as content:
-        data_array = content["arr_0"]
+    with open(os.path.join(src_folder, patient_id), "rb") as f:
+        data_array = np.load(f, allow_pickle=True)["a"]
+        label_array = np.load(f, allow_pickle=True)["b"]
 
-    with np.load(os.path.join(src_folder, patient_id, "_label", ".npz")) as content:
-        label_array = content["arr_0"]
 
     return data_array, label_array
 
@@ -62,6 +61,7 @@ class FileIterator:
 class Array3d_read_and_resize:
     def __init__(self, folder):
         self.folder = folder
+        self.augment = augment_factory(config.TASK_TYPE)
 
     def random_crop(self, data, label, x, y, z):
         data_shape = np.shape(data)
@@ -94,7 +94,8 @@ class Array3d_read_and_resize:
             data, label = read_data_and_label(patient_id, self.folder)
             finish_reading = time.time()
 
-            data, label = self.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+            # data, label = self.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+            data, label = self.augment.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
 
             start_resize = time.time()
             # data, label = borders.cut_and_resize_including_pancreas(data, label, np.random.rand(), np.random.rand())

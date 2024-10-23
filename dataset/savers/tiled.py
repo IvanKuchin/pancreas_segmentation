@@ -70,6 +70,8 @@ class SaverTiled:
 
         for (data, label, x, y, z) in Slicer(src_data, label_data, augment_margin=augment_margin):
             # print(f"Saving slice at {x}, {y}, {z}...")
-            np.savez_compressed(os.path.join(self.folder, self.subfolder, self.patient_id + f"_cut-{self.percentage}_slice-{x}-{y}-{z}.npz", ), [data, label])
+            with open(os.path.join(self.folder, self.subfolder, self.patient_id + f"_cut-{self.percentage}_slice-{x}-{y}-{z}.npz", ), "wb") as f:
+                np.savez_compressed(f, data)
+                np.savez_compressed(f, label)
 
         return result
