@@ -11,9 +11,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from dataset.ds_augmentation.factory import augment_factory
-from tools import resize_3d
 import config as config
-from dataset import borders
 
 
 DEBUG_DATALOADER = False
@@ -62,22 +60,6 @@ class Array3d_read_and_resize:
     def __init__(self, folder):
         self.folder = folder
         self.augment = augment_factory(config.TASK_TYPE)
-
-    def random_crop(self, data, label, x, y, z):
-        data_shape = np.shape(data)
-        random_range = [data_shape[0] - x + 1, data_shape[1] - y + 1, data_shape[2] - z + 1]
-        random_offset = np.random.randint(0, random_range, size = 3)
-        _data = data[
-                random_offset[0]:random_offset[0] + x,
-                random_offset[1]:random_offset[1] + y, 
-                random_offset[2]:random_offset[2] + z,
-                ...]
-        _label = label[
-                random_offset[0]:random_offset[0] + x,
-                random_offset[1]:random_offset[1] + y,
-                random_offset[2]:random_offset[2] + z,
-                 ...]
-        return _data, _label
 
     def __call__(self):
         self.file_list = FileIterator(self.folder)
@@ -154,6 +136,17 @@ def expand_dimension(data, label):
     return data, label
 
 
+def ds_label_shape():
+    shape = []
+    if config.TASK_TYPE == "segmentation":
+        shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]
+    elif config.TASK_TYPE == "classification":
+        shape = [config.LABEL_CLASSIFICATION_DIMENSION]
+    else:
+        raise ValueError("Unknown TASK_TYPE")
+
+    return shape
+
 def craft_datasets(src_folder):
     result = None
 
@@ -171,7 +164,7 @@ def craft_datasets(src_folder):
                                         args=[], 
                                         output_signature=(
                                             tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.float32),
-                                            tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.int32)
+                                            tf.TensorSpec(shape = ds_label_shape(), dtype = tf.int32)
                                         ),
                                         # output_types=(tf.float16, tf.int16), 
                                         # output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
