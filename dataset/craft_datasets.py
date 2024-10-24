@@ -130,13 +130,18 @@ def random_flip(data, label):
 
 # add channel dimension axis=-1 
 # (x, y, z) -> (x, y, z, channel)
-def expand_dimension(data, label):
-    data = data[..., tf.newaxis]
-    label = label[..., tf.newaxis]
+def expand_dimension(data: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
+    if config.TASK_TYPE == "segmentation":
+        data = data[..., tf.newaxis]
+        label = label[..., tf.newaxis]
+    elif config.TASK_TYPE == "classification":
+        data = data[..., tf.newaxis]
+    else:
+        raise ValueError("Unknown TASK_TYPE")
     return data, label
 
 
-def ds_label_shape():
+def ds_label_shape() -> list[int]:
     shape = []
     if config.TASK_TYPE == "segmentation":
         shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]
