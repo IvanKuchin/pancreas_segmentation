@@ -6,10 +6,12 @@ import os
 import sys
 import inspect
 
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
+from ds_generator.factory import ds_generator_factory
 from dataset.ds_augmentation.factory import augment_factory
 import config as config
 
@@ -161,6 +163,8 @@ def craft_datasets(src_folder):
                                     # .map(fname_to_patientid)\
                                     # .map(lambda patient_id: read_data_and_label(patient_id, src_folder))
                                     # .map(random_slice_including_pancreas)
+
+        utils = ds_generator_factory(config.TASK_TYPE)
 
         read_and_resize = Array3d_read_and_resize(src_folder)
         list_ds = tf.data.Dataset\

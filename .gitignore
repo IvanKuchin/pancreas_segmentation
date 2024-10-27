@@ -1,4 +1,9 @@
-__pycache__
+.venv
+venv
+**/__pycache__
+*.egg-info
+build/
+
 logs
 predict
 predict.*
