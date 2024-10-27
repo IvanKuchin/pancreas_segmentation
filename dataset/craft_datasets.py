@@ -164,7 +164,7 @@ def craft_datasets(src_folder):
                                     # .map(lambda patient_id: read_data_and_label(patient_id, src_folder))
                                     # .map(random_slice_including_pancreas)
 
-        utils = ds_generator_factory(config.TASK_TYPE)
+        utils = ds_generator_factory(config)
 
         read_and_resize = Array3d_read_and_resize(src_folder)
         list_ds = tf.data.Dataset\
