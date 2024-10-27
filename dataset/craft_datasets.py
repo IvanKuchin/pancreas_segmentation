@@ -100,22 +100,6 @@ class Array3d_read_and_resize:
 #         yield data, label
     
 
-def crop_to_shape(data, label):
-    target_shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]
-    data_shape = tf.shape(data)
-    random_range = data_shape - target_shape
-    random_offset = tf.cast(
-        tf.math.multiply(tf.random.uniform(shape = random_range.shape), tf.cast(random_range, dtype = tf.float32)),
-        dtype = tf.int32)
-    _data = data[random_offset[0]:random_offset[0] + target_shape[0],
-            random_offset[1]:random_offset[1] + target_shape[1], random_offset[2]:random_offset[2] + target_shape[2],
-            ...]
-    _label = label[random_offset[0]:random_offset[0] + target_shape[0],
-             random_offset[1]:random_offset[1] + target_shape[1], random_offset[2]:random_offset[2] + target_shape[2],
-             ...]
-    return _data, _label
-
-
 def random_flip_along_axis(tensor1, tensor2, _axis):
     if tf.cast(tf.round(tf.random.uniform([1])), tf.bool):
         tensor1 = tf.reverse(tensor1, axis = [_axis])
