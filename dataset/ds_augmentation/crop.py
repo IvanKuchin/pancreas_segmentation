@@ -8,6 +8,9 @@ def __crop(data, offsrt, size):
             ...]
 
 def random_crop_data_and_label(data, label, x, y, z) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Crop data and label 
+    """
     data_shape = np.shape(data)
     random_range = [data_shape[0] - x + 1, data_shape[1] - y + 1, data_shape[2] - z + 1]
     random_offset = np.random.randint(0, random_range, size = 3)

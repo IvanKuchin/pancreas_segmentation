@@ -17,7 +17,7 @@ import config as config
 
 
 DEBUG_DATALOADER = False
-DEBUG_DATA_LOADING_PERFORMANCE = False
+DEBUG_DATA_LOADING_PERFORMANCE = True
 
 def fname_from_full_path(fname_src:str):
     if DEBUG_DATALOADER:
@@ -36,7 +36,6 @@ def read_data_and_label(patient_id:str, src_folder:str) -> tuple[np.ndarray, np.
     with open(os.path.join(src_folder, patient_id), "rb") as f:
         data_array = np.load(f, allow_pickle=True)["a"]
         label_array = np.load(f, allow_pickle=True)["b"]
-
 
     return data_array, label_array
 
@@ -78,94 +77,42 @@ class Array3d_read_and_resize:
             data, label = read_data_and_label(patient_id, self.folder)
             finish_reading = time.time()
 
+            start_flip = time.time()
             data, label = self.augment.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+            finish_flip = time.time()
 
             start_resize = time.time()
             # data, label = borders.cut_and_resize_including_pancreas(data, label, np.random.rand(), np.random.rand())
             finish_resize = time.time()
 
+            start_flip = time.time()
+            data, label = self.augment.random_flip(data, label)
+            finish_flip = time.time()
+
             if DEBUG_DATA_LOADING_PERFORMANCE:
-                print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f}")
+                print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f} flip time: {finish_flip - start_flip:.1f}")
 
             yield tf.convert_to_tensor(data, dtype=tf.float32), tf.convert_to_tensor(label, dtype=tf.int8)
-
-
-# def array3d_read_and_resize():
-#     file_list = FileIterator(config.TFRECORD_FOLDER)
-#     for data_file in file_list:
-#         patient_id = fname_to_patientid(data_file)
-#         data, label = read_data_and_label(patient_id, config.TFRECORD_FOLDER)
-
-#         data, label = random_slice_including_pancreas(data, label)
-#         yield data, label
-    
-
-def random_flip_along_axis(tensor1, tensor2, _axis):
-    if tf.cast(tf.round(tf.random.uniform([1])), tf.bool):
-        tensor1 = tf.reverse(tensor1, axis = [_axis])
-        tensor2 = tf.reverse(tensor2, axis = [_axis])
-    return tensor1, tensor2
-
-
-def random_flip(data, label):
-    data, label = random_flip_along_axis(data, label, 0)
-    data, label = random_flip_along_axis(data, label, 1)
-    data, label = random_flip_along_axis(data, label, 2)
-    return data, label
-
-
-# add channel dimension axis=-1 
-# (x, y, z) -> (x, y, z, channel)
-def expand_dimension(data: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
-    if config.TASK_TYPE == "segmentation":
-        data = data[..., tf.newaxis]
-        label = label[..., tf.newaxis]
-    elif config.TASK_TYPE == "classification":
-        data = data[..., tf.newaxis]
-    else:
-        raise ValueError("Unknown TASK_TYPE")
-    return data, label
-
-
-def ds_label_shape() -> list[int]:
-    shape = []
-    if config.TASK_TYPE == "segmentation":
-        shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]
-    elif config.TASK_TYPE == "classification":
-        shape = [config.LABEL_CLASSIFICATION_DIMENSION]
-    else:
-        raise ValueError("Unknown TASK_TYPE")
-
-    return shape
 
 def craft_datasets(src_folder):
     result = None
 
     if os.path.isdir(src_folder):
-        # d, l = array3d_read_and_resize()
-                                    # .list_files(src_folder + "*_data.npy")\
-                                    # .map(fname_to_patientid)\
-                                    # .map(lambda patient_id: read_data_and_label(patient_id, src_folder))
-                                    # .map(random_slice_including_pancreas)
-
         utils = ds_generator_factory(config)
-
         read_and_resize = Array3d_read_and_resize(src_folder)
+
         list_ds = tf.data.Dataset\
-                                    .from_generator(
-                                        read_and_resize, 
-                                        args=[], 
-                                        output_signature=(
-                                            tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.float32),
-                                            tf.TensorSpec(shape = ds_label_shape(), dtype = tf.int32)
-                                        ),
-                                        # output_types=(tf.float16, tf.int16), 
-                                        # output_shapes=([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
-                                    )\
-                                    .map(random_flip)\
-                                    .map(expand_dimension)\
-                                    .batch(config.BATCH_SIZE)\
-                                    # .prefetch(1)
+                    .from_generator(
+                        read_and_resize, 
+                        args=[], 
+                        output_signature=(
+                            tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.float32),
+                            tf.TensorSpec(shape = utils.ds_label_shape(), dtype = tf.int32)
+                        ),
+                    )\
+                    .map(utils.expand_dimension)\
+                    .batch(config.BATCH_SIZE)\
+                    # .prefetch(1)
 
         # total_number_of_entries = tf.data.experimental.cardinality(list_ds).numpy()
         # if total_number_of_entries == tf.data.experimental.UNKNOWN_CARDINALITY:
@@ -215,6 +162,6 @@ if __name__ == "__main__":
     # item1 = next(read_and_resize())
     # print("item1:", item1[0].shape, item1[1].shape)
 
-    train_ds = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
-    valid_ds = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
-    __run_through_data_wo_any_action(train_ds, valid_ds)
+    ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
+    ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
+    __run_through_data_wo_any_action(ds_train, ds_valid)

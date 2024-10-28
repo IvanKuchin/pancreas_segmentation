@@ -1,5 +1,5 @@
-import dataset.ds_augmentation.segmentation as segmentation
-import dataset.ds_augmentation.classification as classification
+from . import segmentation
+from . import classification
 
 def augment_factory(type:str):
     if type == "segmentation":
