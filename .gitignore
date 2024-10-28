@@ -5,8 +5,8 @@ venv
 build/
 
 logs
-predict
-predict.*
+/predict
+/predict.*
 *.h5
 *.keras
 *.hdf5

@@ -72,7 +72,7 @@ def __weighted_loss(y_true, y_pred):
 
     return loss
 
-def __loss_func(loss_name):
+def loss_generator(loss_name):
     if loss_name == "dice":
         return __dice_loss
     elif loss_name == "scce":
@@ -111,7 +111,7 @@ def main():
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
                                                         # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
-                  loss = __loss_func(config.LOSS_FUNCTION),
+                  loss = loss_generator(config.LOSS_FUNCTION),
                   metrics = [
                       'accuracy',
                       CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
