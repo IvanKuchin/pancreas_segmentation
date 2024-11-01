@@ -4,7 +4,6 @@ import numpy as np
 import time
 import tensorflow as tf
 
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from pancreas_ai.dataset.craft_datasets import craft_datasets
