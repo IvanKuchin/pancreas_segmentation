@@ -3,17 +3,17 @@ from tools import resize_3d
 import src.pancreas_ai.config as config
 
 class PredictNoTile:
-    def __init__(self, model) -> None:
+    def __init__(self, model, config) -> None:
         self.model = model
-        pass
+        self.config = config
 
     def scale_down(self, data):
         self.shape = data.shape
         data = resize_3d.resize_3d_image(data,
                                          tf.constant([
-                                            config.IMAGE_DIMENSION_X, 
-                                            config.IMAGE_DIMENSION_Y, 
-                                            config.IMAGE_DIMENSION_Z
+                                            self.config.IMAGE_DIMENSION_X, 
+                                            self.config.IMAGE_DIMENSION_Y, 
+                                            self.config.IMAGE_DIMENSION_Z
                                         ]))
         data = tf.cast(data, tf.float32)
 

@@ -12,7 +12,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-from dataset.savers.factory import SaverFactory
+from dataset.savers.factory import saver_factory
 from tools import resize_3d
 import src.pancreas_ai.config as config
 
@@ -38,7 +38,7 @@ class CT150:
         self.labels_src_folder = labels_src_folder
         self.TFRECORD_FOLDER = TFRECORD_FOLDER
 
-        self.saver = SaverFactory()("tiled" if config.IS_TILE == True else "no_tiled")
+        self.saver = saver_factory(config)
 
     def GetPatientIDFromFolder(self, folder):
         result = None

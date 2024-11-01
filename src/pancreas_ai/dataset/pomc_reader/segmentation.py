@@ -1,5 +1,4 @@
 import tensorflow as tf
-import dataset.borders as borders
 import dataset.pomc_reader.interface as interface
 import numpy.typing as npt
 import numpy as np
@@ -7,18 +6,16 @@ import os
 import inspect
 import sys
 
-from dataset.pomc_reader import dicom_nrrd
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-import src.pancreas_ai.config as config
-
+from . import dicom_nrrd
 
 class Reader(interface.IReader):
-    def __init__(self):
-        pass
+    def __init__(self, config: dict):
+        self.config = config
 
     def read_data(self, folder:str) -> tuple[npt.NDArray[np.int32], dict]:
         return dicom_nrrd.get_dicom_data(folder)
@@ -65,13 +62,13 @@ class Reader(interface.IReader):
         # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
         # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
 
-        if np.min(data) != config.MIN_DATA: # data scaled to range [-1, 1]
+        if np.min(data) != self.config.MIN_DATA: # data scaled to range [-1, 1]
             result = False
             print("ERROR: (min(data) == {}) != -1".format(np.min(data)))
         if np.mean(data) == 0:
             result = False
             print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
-        if np.max(data) != config.MAX_DATA:
+        if np.max(data) != self.config.MAX_DATA:
             result = False
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 
@@ -79,24 +76,24 @@ class Reader(interface.IReader):
         # -1, if HU in [pancreas HU-s]
         #  0 - background
         #  1 - pancreas
-        if config.PANCREAS_MIN_HU > 2000:
+        if self.config.PANCREAS_MIN_HU > 2000:
             if np.min(label) != -1:
                 result = False
                 print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
         else:
-            if np.min(label) != config.MIN_LABEL:
+            if np.min(label) != self.config.MIN_LABEL:
                 result = False
                 print("ERROR: (min(label) == {}) != -1".format(np.min(label)))
 
         if np.mean(label) == 0:
             result = False
             print("ERROR: (mean(label) == {}) == 0".format(np.mean(label)))
-        if np.max(label) != config.MAX_LABEL:
+        if np.max(label) != self.config.MAX_LABEL:
             result = False
             print("ERROR: (max(label) == {}) != 1".format(np.max(label)))
 
         return result
     
     def rescale_if_needed(self, src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
-        return dicom_nrrd.resacale_if_needed(src_data, label_data, percentage)
+        return dicom_nrrd.resacale_if_needed(src_data, label_data, percentage, self.config)
     

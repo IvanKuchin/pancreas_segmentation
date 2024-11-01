@@ -1,16 +1,18 @@
-import tensorflow as tf
 import glob
 import os
+import sys
+
+import tensorflow as tf
 import pydicom
-from dataset.thickness.factory import ThicknessFactory
-from tools import resize_3d
 import numpy as np
 import nibabel as nib
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+from pancreas_ai import config
+from pancreas_ai.tools.predict.factory import predict_factory
 import tools.craft_network as craft_network
-import src.pancreas_ai.config as config
-from tools.predict.factory import PredictFactory
-from tools.predict.predict_no_tile import PredictNoTile
-from tools.predict.predict_tile import PredictTile
+from dataset.thickness.factory import ThicknessFactory
 
 
 class Predict:
@@ -170,8 +172,8 @@ class Predict:
         model = craft_network.craft_network(config.MODEL_CHECKPOINT)
         # model.summary()
 
-        predict_class = PredictFactory()("tile" if config.IS_TILE else "no_tile")
-        predict_obj = predict_class(model)
+        predict_class = predict_factory(config)
+        predict_obj = predict_class(model, config)
 
         dcm_slices = self.__read_dcm_slices(dcm_folder)
         raw_pixel_data = self.__get_pixel_data(dcm_slices)

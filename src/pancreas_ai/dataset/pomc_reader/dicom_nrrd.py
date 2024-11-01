@@ -1,16 +1,14 @@
 import glob
-import pydicom
-import nrrd
 import os
 
+import nrrd
 import numpy as np
 import numpy.typing as npt
-
-import dataset.borders as borders
-
-import src.pancreas_ai.config as config
-
+import pydicom
 import tensorflow as tf
+
+from . import resize
+
 
 # Stored Values (SV) are the values stored in the image pixel data attribute.
 # Representation value should be calculated as:
@@ -104,10 +102,10 @@ def get_nrrd_data(folder):
     return result
 
 
-def resacale_if_needed(src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+def resacale_if_needed(src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int, config: dict) -> tuple[tf.Tensor, tf.Tensor]:
     if config.IS_TILE == False:
         # scale data down to training size (augment border + resize)
-        scaled_data, scaled_label = borders.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
+        scaled_data, scaled_label = resize.cut_and_resize_including_pancreas(src_data, label_data, percentage/100, percentage/100)
     elif config.IS_TILE == True:
         scaled_data, scaled_label = tf.constant(src_data), tf.constant(label_data)
     else:

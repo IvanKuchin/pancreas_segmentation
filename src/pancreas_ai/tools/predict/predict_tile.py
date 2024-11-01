@@ -5,8 +5,9 @@ from dataset.savers.tiled import Slicer
 DEBUG = False
 
 class PredictTile:
-    def __init__(self, model) -> None:
+    def __init__(self, model, config) -> None:
         self.model = model
+        self.config = config
 
     def scale_down(self, data):
         return data
@@ -23,7 +24,7 @@ class PredictTile:
 
         print("result shape is", result.shape)
 
-        slicer = Slicer(src_data, fake_label, augment_margin=[0, 0, 0])
+        slicer = Slicer(src_data, fake_label, augment_margin=[0, 0, 0], config = self.config)
         for (data, _, x, y, z) in slicer:
             # data may be bigger than src_data shape
             # due to data padding in Slicer to the nearest multiple of IMAGE_DIMENSION_X, IMAGE_DIMENSION_Y, IMAGE_DIMENSION_Z

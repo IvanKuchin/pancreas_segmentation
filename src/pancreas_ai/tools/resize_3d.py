@@ -10,7 +10,7 @@ import tensorflow as tf
 #     result = tf.stack(unstacked, axis = axis_along)
 #     return result
 
-def resize_along_axis(inp_tensor, new_size, axis_along):
+def __resize_along_axis(inp_tensor, new_size, axis_along):
     inp_tensor = tf.expand_dims(inp_tensor, axis = -1)
     restacked = tf.stack(tf.unstack(inp_tensor, axis = axis_along))
     resize = tf.image.resize(restacked, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR)
@@ -19,8 +19,8 @@ def resize_along_axis(inp_tensor, new_size, axis_along):
     result = tf.squeeze(result, axis = -1)
     return result
 
-def resize_3d_image(image, dimensions: tf.TensorSpec(shape=[3,], dtype=tf.int32)):
+def resize_3d_image(image, dimensions: tf.Tensor) -> tf.Tensor:
     assert dimensions.shape == (3,)
-    zoomed_img = resize_along_axis(image, dimensions[:2], 2)
-    zoomed_img = resize_along_axis(zoomed_img, dimensions[1:], 0)
+    zoomed_img = __resize_along_axis(image, dimensions[:2], 2)
+    zoomed_img = __resize_along_axis(zoomed_img, dimensions[1:], 0)
     return zoomed_img
