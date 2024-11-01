@@ -8,7 +8,7 @@ from dataset.pomc_reader import dicom_nrrd
 
 import tensorflow as tf
 
-import config
+import src.pancreas_ai.config as config
 
 class Reader(interface.IReader):
     def __init__(self):

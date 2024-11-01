@@ -8,7 +8,7 @@ import numpy.typing as npt
 
 import dataset.borders as borders
 
-import config
+import src.pancreas_ai.config as config
 
 import tensorflow as tf
 

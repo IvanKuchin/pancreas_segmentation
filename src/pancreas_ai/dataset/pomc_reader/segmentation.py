@@ -13,7 +13,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-import config as config
+import src.pancreas_ai.config as config
 
 
 class Reader(interface.IReader):
@@ -97,6 +97,6 @@ class Reader(interface.IReader):
 
         return result
     
-    def resacale_if_needed(self, src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+    def rescale_if_needed(self, src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
         return dicom_nrrd.resacale_if_needed(src_data, label_data, percentage)
     

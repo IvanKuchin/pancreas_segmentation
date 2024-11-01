@@ -3,7 +3,7 @@ import os
 
 from tools.predict_on_random_data import predict_on_random_data
 
-import config as config
+import src.pancreas_ai.config as config
 
 
 def double_conv(filters, kernel_size=[3,3,3], apply_batchnorm=True, apply_dropout=False):

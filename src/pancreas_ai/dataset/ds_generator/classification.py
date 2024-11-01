@@ -1,7 +1,6 @@
 import tensorflow as tf
 
-from ds_generator import interface
-
+from . import interface
 
 class Utils(interface.IUtils):
     def __init__(self, label_shape: list[int]):
@@ -12,5 +11,4 @@ class Utils(interface.IUtils):
     
     def expand_dimension(self, data: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
         data = data[..., tf.newaxis]
-        label = label[..., tf.newaxis]
         return data, label

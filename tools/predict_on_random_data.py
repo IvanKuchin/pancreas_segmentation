@@ -1,6 +1,6 @@
 import time
 import tensorflow as tf
-import config as config
+import src.pancreas_ai.config as config
 import numpy as np
 
 

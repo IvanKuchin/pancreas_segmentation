@@ -3,7 +3,7 @@ import tools.craft_network.unet_shortcuts_every_layer
 import tools.craft_network.att_unet
 import tools.craft_network.att_unet_dsv
 
-import config as config
+import src.pancreas_ai.config as config
 
 
 def craft_network(weights_file):

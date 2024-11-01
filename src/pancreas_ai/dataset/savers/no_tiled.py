@@ -9,7 +9,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from tools import resize_3d
-import config as config
+import src.pancreas_ai.config as config
 
 class SaverNoTiled:
     def __init__(self, folder: str, subfolder: str, patient_id:str, percentage: int, image_dimension_x: int, image_dimension_y: int, image_dimension_z: int):

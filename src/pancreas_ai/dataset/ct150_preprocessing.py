@@ -14,7 +14,7 @@ sys.path.insert(0, parentdir)
 
 from dataset.savers.factory import SaverFactory
 from tools import resize_3d
-import config as config
+import src.pancreas_ai.config as config
 
 PATIENTS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/ds2-tcia/data/"
 LABELS_SRC_FOLDER = "c:/Users/ikuchin/Downloads/pancreas_data/ds2-tcia/labels/"

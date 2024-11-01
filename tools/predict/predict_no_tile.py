@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tools import resize_3d
-import config as config
+import src.pancreas_ai.config as config
 
 class PredictNoTile:
     def __init__(self, model) -> None:

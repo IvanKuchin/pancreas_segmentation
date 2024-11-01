@@ -9,7 +9,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from tools import resize_3d
-import config as config
+import src.pancreas_ai.config as config
 
 class Slicer:
     def __init__(self, data, label, augment_margin = [0, 0, 0]):

@@ -14,7 +14,7 @@ sys.path.insert(0, parentdir)
 from dataset.pomc_reader.factory import reader_factory
 from dataset.savers.factory import SaverFactory
 from tools import resize_3d
-import config as config
+import src.pancreas_ai.config as config
 
 # INPUT_DIMS = np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z])
 # AUGMENT_SCALE_FACTOR = 0.1
@@ -159,7 +159,7 @@ class POMCDataset:
             for percentage in config.CUTOUT_BORDER_FROM_PANCREAS:
                 print(f"\n\tPreprocess data for {percentage}%")
 
-                scaled_data, scaled_label = self.reader.resacale_if_needed(src_data, label_data, percentage)
+                scaled_data, scaled_label = self.reader.rescale_if_needed(src_data, label_data, percentage)
 
                 start_ts = time.time()
                 scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data.numpy(), scaled_label.numpy())

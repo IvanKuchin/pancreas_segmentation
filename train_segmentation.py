@@ -7,7 +7,7 @@ from dataset.craft_datasets import craft_datasets
 from tools.categorical_metrics import CategoricalMetric, CategoricalF1, CustomCounter, CustomReduceMetric
 from tools.craft_network import craft_network
 from tools.craft_network.loss import loss_func_generator
-import config as config
+import src.pancreas_ai.config as config
 
 
 def get_tensorboard_log_dir():

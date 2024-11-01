@@ -7,7 +7,7 @@ from tools import resize_3d
 import numpy as np
 import nibabel as nib
 import tools.craft_network as craft_network
-import config as config
+import src.pancreas_ai.config as config
 from tools.predict.factory import PredictFactory
 from tools.predict.predict_no_tile import PredictNoTile
 from tools.predict.predict_tile import PredictTile

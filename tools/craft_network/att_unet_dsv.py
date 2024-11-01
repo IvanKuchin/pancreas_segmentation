@@ -13,7 +13,7 @@ from tools.craft_network.att_gate import AttGate
 from tools.craft_network.dsv import DSV
 from tools.craft_network.att_unet import res_block, get_gating_base
 
-import config as config
+import src.pancreas_ai.config as config
 
 
 def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instancenorm = False):

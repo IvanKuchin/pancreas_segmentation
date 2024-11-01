@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 
-import config as config
+import src.pancreas_ai.config as config
 from tools.craft_network.att_gate import AttGate
 
 
