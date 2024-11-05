@@ -10,10 +10,11 @@ NUMBER_OF_CONV_IN_LAYER = 2
 KERNEL_SIZE = [3,3,3]
 
 INITIAL_LEARNING_RATE = 1e-4
-INSTANCE_NORM = False       # not supported yet
 BATCH_NORM = True
 BATCH_SIZE = 1
 BATCH_NORM_MOMENTUM = 0.8
+DROPOUT = False
+INSTANCE_NORM = False       # not supported yet
 
 GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam#args
 

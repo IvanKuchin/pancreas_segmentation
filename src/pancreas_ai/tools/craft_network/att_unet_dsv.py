@@ -8,7 +8,6 @@ from .att_unet import res_block, get_gating_base
 def craft_network(config: dict):
     checkpoint_file = config.MODEL_CHECKPOINT
     apply_batchnorm = config.BATCH_NORM
-    apply_instancenorm = config.INSTANCE_NORM
 
     filters = [16, 32, 64, 128, 256]
 
@@ -17,12 +16,12 @@ def craft_network(config: dict):
     x = inputs
     generator_steps_output = []
     for idx, _filter in enumerate(filters):
-        x = res_block(_filter, x.shape, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm, apply_instancenorm = apply_instancenorm)(x)
+        x = res_block(_filter, x.shape, config)(x)
         generator_steps_output.append(x)
         if idx < len(filters) - 1:
             x = tf.keras.layers.MaxPool3D(pool_size=(2, 2, 2), padding = "same")(x)
 
-    gating_base = get_gating_base(filters[-1], apply_batchnorm)(x)
+    gating_base = get_gating_base(filters[-1], config)(x)
 
     dsv_outputs = []
     skip_conns = reversed(generator_steps_output[:-1])
@@ -38,7 +37,7 @@ def craft_network(config: dict):
             gated_skip = AttGate(apply_batchnorm = apply_batchnorm)((skip_conn, x))
 
         x = tf.keras.layers.Concatenate(name = "concat_{}".format(_filter))([x, gated_skip])
-        x = res_block(_filter, x.shape, kernel_size = config.KERNEL_SIZE, apply_batchnorm = apply_batchnorm, apply_instancenorm = apply_instancenorm)(x)
+        x = res_block(_filter, x.shape, config)(x)
 
         dsv_outputs.append(DSV(filters[-1] // filters[idx + 1])(x))
         # print("{} -> {}".format(x.shape, dsv_outputs[-1].shape))
