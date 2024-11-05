@@ -1,22 +1,15 @@
 import tensorflow as tf
 import os
-import inspect
-import sys
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-parentdir = os.path.dirname(parentdir)
-sys.path.insert(0, parentdir) 
+from .att_gate import AttGate
+from .dsv import DSV
+from .att_unet import res_block, get_gating_base
 
-from tools.predict_on_random_data import predict_on_random_data
-from tools.craft_network.att_gate import AttGate
-from tools.craft_network.dsv import DSV
-from tools.craft_network.att_unet import res_block, get_gating_base
+def craft_network(config: dict):
+    checkpoint_file = config.MODEL_CHECKPOINT
+    apply_batchnorm = config.BATCH_NORM
+    apply_instancenorm = config.INSTANCE_NORM
 
-import src.pancreas_ai.config as config
-
-
-def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instancenorm = False):
     filters = [16, 32, 64, 128, 256]
 
     inputs = tf.keras.layers.Input(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1])
@@ -67,37 +60,3 @@ def craft_network(checkpoint_file = None, apply_batchnorm = True, apply_instance
 
     return model
 
-
-def layer_info(layer):
-    theta = layer.theta
-    weights = theta.get_weights()
-    print("Layer name: ", layer.name)
-    # print("Layer input shape: ", layer.input_shape)
-    # print("Layer output shape: ", layer.output_shape)
-    print("Layer config: ", layer.get_config())
-
-
-def main():
-    import numpy as np 
-
-    model_original = craft_network("", apply_batchnorm = config.BATCH_NORM, apply_instancenorm = config.INSTANCE_NORM)
-    model_original.summary(line_length = 128)
-    model_original.save("test.keras")
-    model_original.save_weights("test.weights.h5")
-
-    y_original = model_original(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
-    print("Model output shape: ", y_original.shape)
-
-    model_reconstructed = craft_network("test.keras", apply_batchnorm = config.BATCH_NORM, apply_instancenorm = config.INSTANCE_NORM)
-    y_reconstructed = model_reconstructed.predict(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
-    print("diff after crafting the model: ", np.sum(y_reconstructed - y_original))
-    model_reconstructed.load_weights("test.weights.h5")
-    y_reconstructed = model_reconstructed.predict(tf.ones(shape=(1, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z, 1)))
-    print("diff after load_weights: ", np.sum(y_reconstructed - y_original))
-
-    os.remove("test.weights.h5")
-    os.remove("test.keras")
-
-
-if __name__ == "__main__":
-    main()

@@ -1,18 +1,10 @@
 import tensorflow as tf
 import os
-import inspect
-import sys
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-parentdir = os.path.dirname(parentdir)
-sys.path.insert(0, parentdir) 
+from ..predict_on_random_data import predict_on_random_data
+from .att_gate import AttGate
 
-from tools.predict_on_random_data import predict_on_random_data
-from tools.craft_network.att_gate import AttGate
-
-import src.pancreas_ai.config as config
-
+from pancreas_ai import config
 
 def res_block(filters, input_shape, kernel_size, apply_batchnorm, apply_instancenorm, apply_dropout=False):
     input_layer = tf.keras.layers.Input(shape = input_shape[1:])
@@ -126,7 +118,7 @@ def main():
     model = craft_network("checkpoints/weights.keras", apply_batchnorm = config.BATCH_NORM, apply_instancenorm = config.BATCH_NORM)
 
     model.summary(line_length = 128, expand_nested = True, show_trainable = True)
-    predict_on_random_data(model)
+    predict_on_random_data(model, {})
 
 
 if __name__ == "__main__":
