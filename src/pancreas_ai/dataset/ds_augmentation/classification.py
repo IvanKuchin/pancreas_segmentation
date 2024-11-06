@@ -14,3 +14,6 @@ class Augment(interface.IAugment):
 
     def random_flip(self, data:npt.NDArray[np.float32], mask:npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.int32], npt.NDArray[np.int32]]:
         return flip.random_flip_data(data), mask
+
+    def random_rotate(self, data:npt.NDArray[np.float32], mask:npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.int32], npt.NDArray[np.int32]]:
+        return rotate.random_rotate_data(data), mask
