@@ -1,26 +1,20 @@
-import tensorflow as tf
+import numpy as np
+import numpy.typing as npt
+from skimage.transform import resize
 
+def __resize_along_axis_np(inp: npt.NDArray, new_size: npt.NDArray, axis_along: int) -> npt.NDArray:
+    unstacked = np.split(inp, inp.shape[axis_along], axis_along)
+    imgs = [np.squeeze(x) for x in unstacked]
+    resized_imgs = [resize(_, new_size[:2]) for _ in imgs]
 
-# def resize_along_axis(tensor, new_size, axis_along):
-#     # print("tensor shape: ", tensor.shape)
-#     # print("axis:", axis_along)
-#     unstacked = [_[tf.newaxis, ..., tf.newaxis] for _ in tf.unstack(tensor, axis = axis_along)]
-#     unstacked = [tf.image.resize(_, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR) for _ in unstacked]
-#     unstacked = tf.squeeze(unstacked)
-#     result = tf.stack(unstacked, axis = axis_along)
-#     return result
-
-def __resize_along_axis(inp_tensor, new_size, axis_along):
-    inp_tensor = tf.expand_dims(inp_tensor, axis = -1)
-    restacked = tf.stack(tf.unstack(inp_tensor, axis = axis_along))
-    resize = tf.image.resize(restacked, new_size, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    resize = tf.cast(resize, dtype=inp_tensor.dtype)
-    result = tf.stack(tf.unstack(resize, axis = 0), axis=axis_along)
-    result = tf.squeeze(result, axis = -1)
+    result = np.stack(resized_imgs, axis = axis_along)
     return result
 
-def resize_3d_image(image, dimensions: tf.Tensor) -> tf.Tensor:
+def resize_3d_image(image: npt.NDArray, dimensions: npt.NDArray) -> npt.NDArray:
+    """
+    Resize a 3D image to the specified dimensions
+    """
     assert dimensions.shape == (3,)
-    zoomed_img = __resize_along_axis(image, dimensions[:2], 2)
-    zoomed_img = __resize_along_axis(zoomed_img, dimensions[1:], 0)
+    zoomed_img = __resize_along_axis_np(image, dimensions[:2], 2)
+    zoomed_img = __resize_along_axis_np(zoomed_img, dimensions[1:], 0)
     return zoomed_img
