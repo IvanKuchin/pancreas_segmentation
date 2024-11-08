@@ -86,12 +86,16 @@ class Array3d_read_and_resize:
             # data = resize_3d.resize_3d_image(data, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
             finish_resize = time.time()
 
+            start_rotate = time.time()
+            # data, label = self.augment.rotate(data, label, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
+            finish_rotate = time.time()
+
             start_flip = time.time()
             data, label = self.augment.random_flip(data, label)
             finish_flip = time.time()
 
             if DEBUG_DATA_LOADING_PERFORMANCE:
-                print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f} flip time: {finish_flip - start_flip:.1f}")
+                print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f} rotate time: {finish_rotate - start_rotate:.1f} flip time: {finish_flip - start_flip:.1f}")
 
             yield tf.convert_to_tensor(data, dtype=tf.float32), tf.convert_to_tensor(label, dtype=tf.int8)
 
