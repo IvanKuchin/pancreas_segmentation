@@ -23,7 +23,7 @@ class Rotate_3d(unittest.TestCase):
 
         self.assertEqual(np.all(arr3 == arr4), True, msg = "rotation 90 and -270 failed")
 
-    def test_rotate_45_deg_images_axis_9(self):
+    def test_rotate_45_deg_images_axis_2(self):
         img1 = np.array(Image.open("tests/data/images/one.jpg"))
         img2 = np.array(Image.open("tests/data/images/two.jpg"))
         img3 = np.array(Image.open("tests/data/images/three.jpg"))

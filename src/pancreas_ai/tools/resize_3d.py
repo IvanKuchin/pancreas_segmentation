@@ -5,7 +5,7 @@ from skimage.transform import resize
 def __resize_along_axis_np(inp: npt.NDArray, new_size: npt.NDArray, axis_along: int) -> npt.NDArray:
     unstacked = np.split(inp, inp.shape[axis_along], axis_along)
     imgs = [np.squeeze(x) for x in unstacked]
-    resized_imgs = [resize(_, new_size[:2]) for _ in imgs]
+    resized_imgs = [resize(_, new_size[:2], order=0, mode='edge') for _ in imgs]
 
     result = np.stack(resized_imgs, axis = axis_along)
     return result

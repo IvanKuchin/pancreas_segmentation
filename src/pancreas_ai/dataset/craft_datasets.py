@@ -13,6 +13,7 @@ sys.path.insert(0, parentdir)
 
 from .ds_generator.factory import ds_generator_factory
 from .ds_augmentation.factory import augment_factory
+from pancreas_ai.tools import resize_3d
 import config
 
 
@@ -82,7 +83,7 @@ class Array3d_read_and_resize:
             finish_flip = time.time()
 
             start_resize = time.time()
-            # data, label = borders.cut_and_resize_including_pancreas(data, label, np.random.rand(), np.random.rand())
+            # data = resize_3d.resize_3d_image(data, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
             finish_resize = time.time()
 
             start_flip = time.time()
