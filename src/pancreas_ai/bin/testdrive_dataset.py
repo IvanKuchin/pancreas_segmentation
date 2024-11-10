@@ -49,3 +49,4 @@ if __name__ == "__main__":
     ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
     ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
     __run_through_data_wo_any_action(ds_train, ds_valid)
+    
