@@ -22,9 +22,10 @@ def random_crop_data_and_label(data, label, x, y, z) -> tuple[np.ndarray, np.nda
 def random_crop_data(data: np.ndarray, inside_width: int, inside_height: int, inside_depth: int) -> np.ndarray:
     data_shape = np.shape(data)
     random_range = [
-        (data_shape[0] - inside_width + 1) / 2, 
-        (data_shape[1] - inside_height + 1) / 2, 
-        (data_shape[2] - inside_depth + 1) / 2]
+        (data_shape[0] - inside_width + 1) // 2, 
+        (data_shape[1] - inside_height + 1) // 2, 
+        (data_shape[2] - inside_depth + 1) // 2]
+    random_range = np.maximum(random_range, 1)
     random_offset = np.random.randint(0, random_range, size = 3)
 
     return __crop(data, random_offset, [inside_width, inside_height, inside_depth])

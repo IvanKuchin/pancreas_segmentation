@@ -61,7 +61,7 @@ class FileIterator:
 class Array3d_read_and_resize:
     def __init__(self, folder):
         self.folder = folder
-        self.augment = augment_factory(config.TASK_TYPE)
+        self.augment = augment_factory(config)
 
     def __call__(self):
         self.file_list = FileIterator(self.folder)
@@ -78,13 +78,13 @@ class Array3d_read_and_resize:
             data, label = read_data_and_label(patient_id, self.folder)
             finish_reading = time.time()
 
+            start_resize = time.time()
+            # data, label = self.augment.random_resize(data, label)
+            finish_resize = time.time()
+
             start_flip = time.time()
             data, label = self.augment.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
             finish_flip = time.time()
-
-            start_resize = time.time()
-            # data = resize_3d.resize_3d_image(data, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
-            finish_resize = time.time()
 
             start_rotate = time.time()
             # data, label = self.augment.rotate(data, label, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))

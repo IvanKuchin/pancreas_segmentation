@@ -16,3 +16,4 @@ tmp
 weights.*
 csv_logs
 fixes.txt
+*.jpg
