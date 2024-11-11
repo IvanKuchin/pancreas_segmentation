@@ -51,11 +51,24 @@ def __weighted_loss(y_true, y_pred):
 
     return loss
 
-def loss_func_generator(loss_name):
-    if loss_name == "dice":
+def __segmentation_loss(config: dict):
+    if config.LOSS_FUNCTION == "dice":
         return __dice_loss
-    elif loss_name == "scce":
+    elif config.LOSS_FUNCTION == "scce":
         return __weighted_loss
+    else:
+        raise ValueError("Unknown loss function")
+
+
+def __classification_loss(config: dict):
+    return tf.keras.losses.BinaryCrossentropy(from_logits = False)
+
+
+def loss_func_factory(config: dict):
+    if config.TASK_TYPE == "segmentation":
+        return __segmentation_loss(config)
+    elif config.TASK_TYPE == "classification":
+        return __classification_loss(config)
     else:
         raise ValueError("Unknown loss function")
 

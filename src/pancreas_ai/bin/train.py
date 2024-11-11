@@ -7,8 +7,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from pancreas_ai.dataset.craft_datasets import craft_datasets
 from pancreas_ai.tools.categorical_metrics import CategoricalMetric, CategoricalF1, CustomCounter, CustomReduceMetric
-from pancreas_ai.tools.craft_network import craft_network
-from pancreas_ai.tools.craft_network.loss import loss_func_generator
+from pancreas_ai.tools.craft_network import factory
+from pancreas_ai.tools.craft_network.loss import loss_func_factory
 from pancreas_ai import config
 
 
@@ -30,8 +30,7 @@ def main():
 
     ds_train = ds_train.prefetch(1).repeat(config.TRAIN_PASSES_PER_VALIDATION)
 
-    model = craft_network(config)
-    # predict_on_random_data(model)
+    model = factory.model_factory(config)
 
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
                                                     config.MODEL_CHECKPOINT,
@@ -55,7 +54,7 @@ def main():
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
                                                         # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
-                  loss = loss_func_generator(config.LOSS_FUNCTION),
+                  loss = loss_func_factory(config),
                   metrics = [
                       'accuracy',
                       CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
