@@ -13,7 +13,6 @@ sys.path.insert(0, parentdir)
 
 from .ds_generator.factory import ds_generator_factory
 from .ds_augmentation.factory import augment_factory
-from pancreas_ai.tools import resize_3d
 import config
 
 
