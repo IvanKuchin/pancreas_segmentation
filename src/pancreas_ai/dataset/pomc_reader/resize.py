@@ -13,12 +13,14 @@ import config
 DEBUG_DATALOADER = True
 DEBUG_DATA_LOADING_PERFORMANCE = False
 
-# cutout and resize 3-d tensor with shape [w,h,d]
-# 1) cut overheads off from top_left to bottom_right + 1
-#    top_left and bottom_right will be present in the final shape
-# 2) resize shape from step(1) to final shape
-#    final shape taken form the config
 def __cutout_and_resize_tensor(tensor, top_left, bottom_right):
+    """
+    cutout and resize 3-d tensor with shape [w,h,d]
+    1) cut overheads off from top_left to bottom_right + 1
+       top_left and bottom_right will be present in the final shape
+    2) resize shape from step(1) to final shape
+       final shape taken form the config
+    """
     # assert tensor.ndim == 3
     t = tensor[top_left[0]:bottom_right[0] + 1, top_left[1]:bottom_right[1] + 1, top_left[2]:bottom_right[2] + 1]
     t = tf.squeeze(t)
