@@ -3,6 +3,7 @@ import glob
 import os
 import sys
 import re
+import numpy.typing as npt
 import numpy as np
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -50,7 +51,7 @@ class POMCDataset:
         print("\tmean std:\t{:.3f} {:.3f} -> {:.3f} {:.3f}".format(np.mean(tensor_old), np.std(tensor_old), np.mean(tensor_new), np.std(tensor_new)))
         print("\tsum:\t\t{} -> {}".format(np.sum(tensor_old), np.sum(tensor_new)))
 
-    def preprocess_data(self, data, label):
+    def preprocess_data(self, data: npt.NDArray[np.float32], label: npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
         # zoom = AUGMENT_SCALED_DIMS / data.shape
         # data_zoomed = scipy.ndimage.interpolation.zoom(data, zoom, mode="nearest")
         # label_zoomed = scipy.ndimage.interpolation.zoom(label, zoom, mode="nearest")
@@ -152,7 +153,7 @@ class POMCDataset:
                 scaled_data, scaled_label = self.reader.rescale_if_needed(src_data, label_data, percentage)
 
                 start_ts = time.time()
-                scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data.numpy(), scaled_label.numpy())
+                scaled_src_data, scaled_label_data = self.preprocess_data(scaled_data, scaled_label)
                 print("\tPreprocess data in {:.2f} sec".format(time.time() - start_ts))
 
                 if DEBUG:

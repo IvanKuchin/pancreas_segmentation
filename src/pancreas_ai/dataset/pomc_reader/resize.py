@@ -2,6 +2,8 @@ import os
 import sys
 import time
 
+import numpy as np
+import numpy.typing as npt
 import tensorflow as tf
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -13,7 +15,7 @@ import config
 DEBUG_DATALOADER = True
 DEBUG_DATA_LOADING_PERFORMANCE = False
 
-def __cutout_and_resize_tensor(tensor, top_left, bottom_right):
+def __cutout_and_resize_tensor(tensor: npt.NDArray[np.float32], top_left: npt.NDArray[np.float32] , bottom_right: npt.NDArray[np.float32]) -> npt.NDArray:
     """
     cutout and resize 3-d tensor with shape [w,h,d]
     1) cut overheads off from top_left to bottom_right + 1
@@ -21,22 +23,26 @@ def __cutout_and_resize_tensor(tensor, top_left, bottom_right):
     2) resize shape from step(1) to final shape
        final shape taken form the config
     """
-    # assert tensor.ndim == 3
-    t = tensor[top_left[0]:bottom_right[0] + 1, top_left[1]:bottom_right[1] + 1, top_left[2]:bottom_right[2] + 1]
-    t = tf.squeeze(t)
+    assert tensor.ndim == 3
+    t = tensor[
+            top_left[0]:bottom_right[0] + 1, 
+            top_left[1]:bottom_right[1] + 1, 
+            top_left[2]:bottom_right[2] + 1
+            ]
+    t = np.squeeze(t)
     # assert tf.rank(t) == 3
 
-    final_shape = tf.constant([
+    final_shape = np.array([
                     config.IMAGE_DIMENSION_X * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN), 
                     config.IMAGE_DIMENSION_Y * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN), 
                     config.IMAGE_DIMENSION_Z * (1 + 2 * config.AUGMENTATION_SHIFT_MARGIN),
-                    ])
-    final_shape = tf.cast(final_shape, dtype = tf.int32)
+                    ], dtype=np.int32)
+    # final_shape = tf.cast(final_shape, dtype = tf.int32)
     t = resize_3d.resize_3d_image(t, final_shape)
     return t
 
 
-def cut_and_resize_including_pancreas(data, mask, top_left_percentage, bottom_right_percentage) -> tuple[tf.Tensor, tf.Tensor]:
+def cut_and_resize_including_pancreas(data: npt.NDArray[np.float32], mask: npt.NDArray[np.float32], top_left_percentage: float, bottom_right_percentage: float) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
     """
     cutout and resize 3-d tensor with shape [w,h,d]
     cut overheads off from top_left to bottom_right + 1

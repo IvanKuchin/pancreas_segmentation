@@ -83,5 +83,5 @@ class Reader(interface.IReader):
     
     def rescale_if_needed(self, src_data: npt.NDArray[np.float32], label_data: npt.NDArray[np.float32], percentage: int) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
         scaled_data, _ = dicom_nrrd.resacale_if_needed(src_data, self.mask, percentage, self.config)
-        return scaled_data, tf.constant(label_data)
+        return scaled_data, label_data
     
