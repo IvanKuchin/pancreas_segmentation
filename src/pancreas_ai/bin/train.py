@@ -6,9 +6,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from pancreas_ai.dataset.craft_datasets import craft_datasets
-from pancreas_ai.tools.categorical_metrics import CategoricalMetric, CategoricalF1, CustomCounter, CustomReduceMetric
 from pancreas_ai.tools.craft_network import factory
 from pancreas_ai.tools.craft_network.loss import loss_func_factory
+from pancreas_ai.tools.craft_network.metrics import metrics_factory
 from pancreas_ai import config
 
 
@@ -50,30 +50,14 @@ def main():
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
                                                       verbose = 1)
-    model.compile(optimizer = tf.keras.optimizers.AdamW(
+    model.compile(
+        optimizer = tf.keras.optimizers.AdamW(
                                                         learning_rate = config.INITIAL_LEARNING_RATE,
                                                         # gradient_accumulation_steps = config.GRADIENT_ACCUMULATION_STEPS,
                                                         ),
-                  loss = loss_func_factory(config),
-                  metrics = [
-                      'accuracy',
-                      CategoricalMetric(tf.keras.metrics.TruePositives(), name = 'custom_tp'),
-                      CategoricalMetric(tf.keras.metrics.FalsePositives(), name = 'custom_fp'),
-                      CategoricalMetric(tf.keras.metrics.TrueNegatives(), name = 'custom_tn'),
-                      CategoricalMetric(tf.keras.metrics.FalseNegatives(), name = 'custom_fn'),
-                      CategoricalMetric(tf.keras.metrics.Accuracy(), name = 'custom_accuracy'),
-                      CategoricalMetric(tf.keras.metrics.Precision(), name = 'custom_precision'),
-                      CategoricalMetric(tf.keras.metrics.Recall(), name = 'custom_recall'),
-                      CategoricalMetric(tf.keras.metrics.MeanIoU(num_classes=2), name = 'custom_MeanIoU'),
-                      CategoricalF1(name = 'custom_f1'),
-                      CustomReduceMetric(what = "y_true", reduce = "max", name = 'custom_max_y_true'),
-                      CustomReduceMetric(what = "y_pred", reduce = "max", name = 'custom_max_y_pred'),
-                      CustomReduceMetric(what = "y_true", reduce = "min", name = 'custom_min_y_true'),
-                      CustomReduceMetric(what = "y_pred", reduce = "min", name = 'custom_min_y_pred'),
-                      CustomReduceMetric(what = "y_true", reduce = "sum", name = 'custom_sum_y_true'),
-                      CustomReduceMetric(what = "y_pred", reduce = "sum", name = 'custom_sum_y_pred'),
-                      CustomCounter(name = 'custom_counter'),
-                  ])
+        loss = loss_func_factory(config),
+        metrics = metrics_factory(config),
+    )
 
     history = model.fit(
         ds_train,

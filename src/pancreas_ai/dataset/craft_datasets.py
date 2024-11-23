@@ -57,7 +57,7 @@ class FileIterator:
         else:
             raise StopIteration
 
-class Array3d_read_and_resize:
+class Array3d_augment:
     def __init__(self, folder):
         self.folder = folder
         self.augment = augment_factory(config)
@@ -103,7 +103,7 @@ def craft_datasets(src_folder):
 
     if os.path.isdir(src_folder):
         utils = ds_generator_factory(config)
-        read_and_resize = Array3d_read_and_resize(src_folder)
+        read_and_resize = Array3d_augment(src_folder)
 
         list_ds = tf.data.Dataset\
                     .from_generator(

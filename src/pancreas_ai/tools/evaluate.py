@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tools.categorical_metrics import CategoricalMetric, CategoricalF1
 
+from pancreas_ai.tools.craft_network.categorical_metrics import CategoricalMetric, CategoricalF1
 from dataset.craft_datasets import craft_datasets
 from tools.craft_network import craft_network
 import src.pancreas_ai.config as config
