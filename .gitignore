@@ -1,7 +1,12 @@
-__pycache__
+.venv
+venv
+**/__pycache__
+*.egg-info
+build/
+
 logs
-predict
-predict.*
+/predict
+/predict.*
 *.h5
 *.keras
 *.hdf5
@@ -11,3 +16,4 @@ tmp
 weights.*
 csv_logs
 fixes.txt
+*.jpg
