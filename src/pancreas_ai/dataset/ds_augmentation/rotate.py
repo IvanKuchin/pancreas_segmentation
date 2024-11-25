@@ -1,17 +1,5 @@
 import numpy as np
-import cv2
 import scipy.ndimage as ndimage
-
-def __rotate_CV(image, angle: float):
-    #in OpenCV we need to form the tranformation matrix and apply affine calculations
-    #interpolation cv2.INTER_CUBIC (slow) & cv2.INTER_LINEAR
-    image = image[..., np.newaxis].astype(np.uint8)
-    h,w = image.shape[:2]
-    cX,cY = (w//2,h//2)
-    M = cv2.getRotationMatrix2D((cX,cY),angle,1)
-
-    rotated = cv2.warpAffine(image, M, (w,h), flags=cv2.INTER_LINEAR)
-    return rotated
 
 def __rotate_scipy(data: np.ndarray, angle: float) -> np.ndarray:
     return ndimage.rotate(data, angle, reshape=False, order=1)
