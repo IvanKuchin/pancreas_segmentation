@@ -13,7 +13,7 @@ class PrintMetricsInput(tf.keras.metrics.Metric):
         self.m.assign(0)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        print("y_true:", y_true.numpy(), "\t y_pred:", y_pred)
+        print("y_true:", y_true, "\t y_pred:", y_pred)
 
     def result(self):
         return self.m
@@ -24,7 +24,10 @@ def __classification_metrics(config: dict) -> list:
         tf.keras.metrics.Precision(name="precision"),
         tf.keras.metrics.Recall(name="recall"),
         tf.keras.metrics.F1Score(name="f1"),
-        binary_metrics.Binary_MCC(name = "custom_mcc")
+        tf.keras.metrics.TruePositives(name="tp"),
+        tf.keras.metrics.TrueNegatives(name="tn"),
+        binary_metrics.Binary_MCC(name = "custom_mcc"),
+        # PrintMetricsInput(),
         # binary_metrics.precision,
         # binary_metrics.recall,
         # binary_metrics.f1,
