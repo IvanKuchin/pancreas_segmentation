@@ -41,11 +41,11 @@ def main():
                                                     )
     csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
-    reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.1,
+    reduce_lr_on_plateau = tf.keras.callbacks.ReduceLROnPlateau(factor = 0.5,
                                                                 monitor = config.MONITOR_METRIC,
                                                                 patience = 30,
                                                                 cooldown = 10,
-                                                                min_lr = 0.0001,
+                                                                min_lr = 1e-6,
                                                                 verbose = 1,
                                                                 mode = config.MONITOR_MODE)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor = config.MONITOR_METRIC, mode = config.MONITOR_MODE, patience = 200,
