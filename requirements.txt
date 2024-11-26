@@ -1,3 +1,4 @@
 pydicom
 pynrrd
 nibabel
+scikit-image
