@@ -93,7 +93,7 @@ class Array3d_augment:
             if DEBUG_DATA_LOADING_PERFORMANCE:
                 print(f"\tDATA_LOADING_PERFORMANCE: reading time: {finish_reading - start_reading:.1f} resize time: {finish_resize - start_resize:.1f} rotate time: {finish_rotate - start_rotate:.1f} flip time: {finish_flip - start_flip:.1f}")
 
-            yield tf.convert_to_tensor(data, dtype=tf.float32), tf.convert_to_tensor(label, dtype=tf.float32)
+            yield tf.convert_to_tensor(data, dtype=tf.float32), tf.convert_to_tensor(label, dtype=tf.int32)
 
 def craft_datasets(src_folder):
     result = None
@@ -108,7 +108,7 @@ def craft_datasets(src_folder):
                         args=[], 
                         output_signature=(
                             tf.TensorSpec(shape = [config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z], dtype = tf.float32),
-                            tf.TensorSpec(shape = utils.ds_label_shape(), dtype = tf.float32)
+                            tf.TensorSpec(shape = utils.ds_label_shape(), dtype = tf.int32)
                         ),
                     )\
                     .map(utils.expand_dimension)\
