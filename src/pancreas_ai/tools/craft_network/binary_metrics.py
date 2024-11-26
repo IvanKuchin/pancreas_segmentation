@@ -101,10 +101,10 @@ class Binary_MCC(tf.keras.metrics.Metric):
         self.m = self.add_variable(name = "m", initializer = "zeros", shape = ())
 
     def reset_states(self):
-        self.tp.reset_states()
-        self.tn.reset_states()
-        self.fp.reset_states()
-        self.fn.reset_states()
+        self.tp.reset_state()
+        self.tn.reset_state()
+        self.fp.reset_state()
+        self.fn.reset_state()
         self.m.assign(0)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
