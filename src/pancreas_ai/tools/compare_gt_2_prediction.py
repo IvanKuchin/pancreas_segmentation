@@ -17,12 +17,12 @@ def get_metrics(gt, pred):
     pred = tf.constant(pred)
 
     m1 = tf.keras.metrics.Precision()
-    m1.reset_states()
+    m1.reset_state()
     m1.update_state(gt, pred)
     precision = m1.result()
 
     m1 = tf.keras.metrics.Recall()
-    m1.reset_states()
+    m1.reset_state()
     m1.update_state(gt, pred)
     recall = m1.result()
 
