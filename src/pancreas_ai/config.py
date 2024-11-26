@@ -20,7 +20,7 @@ GRADIENT_ACCUMULATION_STEPS = 4 # https://www.tensorflow.org/api_docs/python/tf/
 
 LOSS_FUNCTION = "dice" # "dice" or "scce"
 
-MONITOR_METRIC = "val_f1"
+MONITOR_METRIC = "val_custom_f1"
 MONITOR_MODE = "max"
 
 MODEL_CHECKPOINT = "checkpoints/weights.keras"

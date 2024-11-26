@@ -123,3 +123,28 @@ class Binary_MCC(tf.keras.metrics.Metric):
         den = (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)
         return num / tf.math.sqrt(den + tf.keras.backend.epsilon())
 
+class CustomF1(tf.keras.metrics.Metric):
+    """
+    This class is the workaround of this issue (https://github.com/keras-team/tf-keras/issues/33)
+
+    The only difference from base class in type casting of y_true to tf.float32 
+    """
+
+    def __init__(self, name="custom_f1", **kwargs):
+        super().__init__(name = name, **kwargs)
+        self.precision = tf.keras.metrics.Precision()
+        self.recall = tf.keras.metrics.Recall()
+
+    def reset_state(self):
+        self.precision.reset_state()
+        self.recall.reset_state()
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        y_true = tf.cast(y_true, dtype=tf.float32)
+        self.precision.update_state(y_true, y_pred, sample_weight)
+        self.recall.update_state(y_true, y_pred, sample_weight)
+
+    def result(self):
+        __prec = self.precision.result()
+        __recall = self.recall.result()
+        return 2 * __prec * __recall / (__prec + __recall + tf.keras.backend.epsilon())

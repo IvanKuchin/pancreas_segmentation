@@ -53,7 +53,7 @@ class CategoricalMetric(tf.keras.metrics.Metric):
         self.m = metric
 
     def reset_states(self):
-        self.m.reset_states()
+        self.m.reset_state()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred = tf.argmax(y_pred, axis = -1)
@@ -72,8 +72,8 @@ class CategoricalF1(tf.keras.metrics.Metric):
         self.recall = tf.keras.metrics.Recall()
 
     def reset_states(self):
-        self.precision.reset_states()
-        self.recall.reset_states()
+        self.precision.reset_state()
+        self.recall.reset_state()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred = tf.argmax(y_pred, axis = -1)
