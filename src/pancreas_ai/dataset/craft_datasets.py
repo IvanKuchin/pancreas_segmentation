@@ -13,7 +13,7 @@ sys.path.insert(0, parentdir)
 
 from .ds_generator.factory import ds_generator_factory
 from .ds_augmentation.factory import augment_factory
-import config
+# import 
 
 
 DEBUG_DATALOADER = False
@@ -58,9 +58,10 @@ class FileIterator:
             raise StopIteration
 
 class Array3d_augment:
-    def __init__(self, folder):
+    def __init__(self, folder, config):
         self.folder = folder
-        self.augment = augment_factory(config)
+        self.config = config
+        self.augment = augment_factory(self.config)
 
     def __call__(self):
         self.file_list = FileIterator(self.folder)
@@ -75,15 +76,15 @@ class Array3d_augment:
             finish_reading = time.time()
 
             start_resize = time.time()
-            # data, label = self.augment.random_resize(data, label)
+            data, label = self.augment.random_resize(data, label)
             finish_resize = time.time()
 
             start_flip = time.time()
-            data, label = self.augment.random_crop(data, label, config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z)
+            data, label = self.augment.random_crop(data, label, self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z)
             finish_flip = time.time()
 
             start_rotate = time.time()
-            # data, label = self.augment.rotate(data, label, np.array([config.IMAGE_DIMENSION_X, config.IMAGE_DIMENSION_Y, config.IMAGE_DIMENSION_Z]))
+            # data, label = self.augment.rotate(data, label, np.array([self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z]))
             finish_rotate = time.time()
 
             start_flip = time.time()
@@ -95,12 +96,12 @@ class Array3d_augment:
 
             yield tf.convert_to_tensor(data, dtype=tf.float32), tf.convert_to_tensor(label, dtype=tf.int32)
 
-def craft_datasets(src_folder):
+def craft_datasets(src_folder, config):
     result = None
 
     if os.path.isdir(src_folder):
         utils = ds_generator_factory(config)
-        read_and_resize = Array3d_augment(src_folder)
+        read_and_resize = Array3d_augment(src_folder, config)
 
         list_ds = tf.data.Dataset\
                     .from_generator(
