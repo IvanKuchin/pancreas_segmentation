@@ -31,7 +31,7 @@ def __custom_loss(y_true, y_pred):
 
 
 def main():
-    ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER)
+    ds_train, ds_valid = craft_datasets(config.TFRECORD_FOLDER, config)
     data_orig, label_orig = next(iter(ds_valid))
     data_orig = data_orig[0:1, ...]
     label_orig = label_orig[0:1, ...]

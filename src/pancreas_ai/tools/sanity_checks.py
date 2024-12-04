@@ -29,7 +29,7 @@ def get_min_mean_max(ds):
             print_error("shapea are not equal {} and {}".format(data.shape, labels.shape))
 
 def main():
-    train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER)
+    train_ds, valid_ds = craft_datasets(config.TFRECORD_FOLDER, config)
     print("--- Train set")
     get_min_mean_max(train_ds)
     print("--- Valid set")

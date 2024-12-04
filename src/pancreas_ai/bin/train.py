@@ -25,8 +25,8 @@ def get_csv_dir():
 
 
 def main():
-    ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
-    ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
+    ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"), config)
+    ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"), config)
 
     ds_train = ds_train.prefetch(1).repeat(config.TRAIN_PASSES_PER_VALIDATION)
 

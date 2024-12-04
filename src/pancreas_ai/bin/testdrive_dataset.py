@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # item1 = next(read_and_resize())
     # print("item1:", item1[0].shape, item1[1].shape)
 
-    ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"))
-    ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"))
+    ds_train = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "train"), config)
+    ds_valid = craft_datasets(os.path.join(config.TFRECORD_FOLDER, "valid"), config)
     __run_through_data_wo_any_action(ds_train, ds_valid)
     
