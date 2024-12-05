@@ -99,7 +99,7 @@ All information about training/metrics/results as well as trained weights are on
 
 ## Inference
 
-### Option 1. Docker container (preffered)
+### Option 1. Docker container (preferred)
 
 ### Option 2. Python package
 
