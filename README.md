@@ -95,7 +95,7 @@ Example of prediction in 3DSlicer (prediction: green, ground truth: red)
 
 ## Training
 
-All information about training/metrics/results as well as trained weights are on the (model card)[https://huggingface.co/IvanKuchin/pancreas_cancer_classification]
+All information about training/metrics/results as well as trained weights are on the [model card](https://huggingface.co/IvanKuchin/pancreas_cancer_classification)
 
 ## Inference
 
