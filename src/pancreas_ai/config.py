@@ -94,4 +94,9 @@ CLASSIFICATION_SEGMENTATION_MASK_FILENAME = "segmentation.nii.gz"
 PANCREAS_ID_IN_MASK = 7
 
 CLASSIFICATION_LABEL_FILENAME = "label"
-#######################################
+######################################################
+
+#################### Prediction ##################
+PREDICTION_CT_FOLDER = "predict"
+##################################################
+
