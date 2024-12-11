@@ -2,3 +2,4 @@ pydicom
 pynrrd
 nibabel
 scikit-image
+totalsegmentator

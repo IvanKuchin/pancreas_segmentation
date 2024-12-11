@@ -28,6 +28,10 @@ class Reader(interface.IReader):
         self.mask = self.__read_nii(os.path.join(folder, self.config.CLASSIFICATION_SEGMENTATION_MASK_FILENAME))
         self.mask[self.mask == self.config.PANCREAS_ID_IN_MASK] = 1
 
+        assert dicom.shape == self.mask.shape, "ERROR: DICOM and mask shapes are different"
+
+        dicom[self.mask == 0] = 0
+
         return dicom, dicom_metadata
     
     def read_label(self, folder:str) -> tuple[npt.NDArray[np.int32], dict]:
