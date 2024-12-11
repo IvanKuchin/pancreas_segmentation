@@ -38,9 +38,10 @@ VALIDATION_PERCENTAGE = 0.15
 #
 # Our pancreas calculations show values from -1200 to 4000
 #
-# training attempts shows that the best performance in the range [-512, 1024]
-PANCREAS_MIN_HU =  -512    # -512
-PANCREAS_MAX_HU =  1024    # 1024
+# By keeping the range symmetric, after normalization we will have emtpy values == 0
+# it might not be important, but makes troubleshooting easier
+PANCREAS_MIN_HU =  -1024
+PANCREAS_MAX_HU =   1024
 
 # segmentation
 # IMAGE_DIMENSION_X = 160    
