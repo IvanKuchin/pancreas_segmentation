@@ -1,11 +1,14 @@
 import sys
 import os
 
+import numpy as np
+
 from totalsegmentator.python_api import totalsegmentator
 import nibabel as nib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+from pancreas_ai.tools import resize_3d
 from pancreas_ai.dataset.pomc_reader.factory import reader_factory
 from pancreas_ai import config
 
@@ -33,10 +36,18 @@ class Predict:
         segmentation = totalsegmentator(self.ct_folder, fastest=False)
         nib.save(segmentation, self.mask_file)
 
-    def __get_segmentation(self):
-        return nib.load(self.mask_file)
-    
-    # def masked_pancreas(self):
+    def cancer_probability(self):
+        data, data_metadata = self.reader.read_data(self.ct_folder)
+
+        # substitute fake label
+        if not self.reader.check_before_processing(data, np.array([0]), data_metadata, {}):
+            return
+
+        scaled_data = resize_3d.resize_3d_image(data, np.array([self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z]))
+
+        result = scaled_data
+
+        return result
 
 
 def main():
@@ -53,7 +64,7 @@ def main():
     # predict.segment()
 
     print("Mask pancreas")
-    segmentation = predict.masked_pancreas()
+    pred = predict.cancer_probability()
 
 
 if __name__ == "__main__":
