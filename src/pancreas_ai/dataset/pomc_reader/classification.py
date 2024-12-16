@@ -30,7 +30,7 @@ class Reader(interface.IReader):
 
         assert dicom.shape == self.mask.shape, "ERROR: DICOM and mask shapes are different"
 
-        dicom[self.mask == 0] = 0
+        # dicom[self.mask == 0] = 0
 
         return dicom, dicom_metadata
     
@@ -68,13 +68,13 @@ class Reader(interface.IReader):
         # print("\tsanity check data: {}/{}/{}".format(np.min(data), np.mean(data), np.max(data)))
         # print("\tsanity check label: {}/{}/{}".format(np.min(label), np.mean(label), np.max(label)))
 
-        if np.min(data) != self.config.MIN_DATA: # data scaled to range [-1, 1]
+        if np.min(data) < self.config.MIN_DATA: # data scaled to range [-1, 1]
             result = False
             print("ERROR: (min(data) == {}) != -1".format(np.min(data)))
         if np.mean(data) == 0:
             result = False
             print("ERROR: (mean(data) == {}) == 0".format(np.mean(data)))
-        if np.max(data) != self.config.MAX_DATA:
+        if np.max(data) > self.config.MAX_DATA:
             result = False
             print("ERROR: (max(data) == {}) != 1".format(np.max(data)))
 

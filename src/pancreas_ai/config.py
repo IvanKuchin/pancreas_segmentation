@@ -40,7 +40,7 @@ VALIDATION_PERCENTAGE = 0.15
 #
 # By keeping the range symmetric, after normalization we will have emtpy values == 0
 # it might not be important, but makes troubleshooting easier
-PANCREAS_MIN_HU =  -1024
+PANCREAS_MIN_HU =  -512
 PANCREAS_MAX_HU =   1024
 
 # segmentation
