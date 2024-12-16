@@ -2,15 +2,18 @@ import sys
 import os
 
 import numpy as np
+import tensorflow as tf
 
 from totalsegmentator.python_api import totalsegmentator
 import nibabel as nib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from pancreas_ai.tools import resize_3d
-from pancreas_ai.dataset.pomc_reader.factory import reader_factory
 from pancreas_ai import config
+from pancreas_ai.dataset.pomc_reader.factory import reader_factory
+from pancreas_ai.tools import resize_3d
+from pancreas_ai.tools.craft_network import factory
+from pancreas_ai.dataset.pomc_reader.preprocess import preprocess_data
 
 class Predict:
     def __init__(self, config: dict):
@@ -36,18 +39,29 @@ class Predict:
         segmentation = totalsegmentator(self.ct_folder, fastest=False)
         nib.save(segmentation, self.mask_file)
 
-    def cancer_probability(self):
+    def cancer_probability(self) -> np.array:
         data, data_metadata = self.reader.read_data(self.ct_folder)
+        fake_label = np.array([0])
 
-        # substitute fake label
-        if not self.reader.check_before_processing(data, np.array([0]), data_metadata, {}):
+        if not self.reader.check_before_processing(data, fake_label, data_metadata, {}):
             return
 
-        scaled_data = resize_3d.resize_3d_image(data, np.array([self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z]))
+        data_shape = np.array([self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z])
+        data = resize_3d.resize_3d_image(data, data_shape)
+        data, fake_label = preprocess_data(data, fake_label, config)
+        if self.reader.check_after_preprocessing(data, fake_label) == False:
+            print("ERROR: data or label failed sanity check")
+            return
 
-        result = scaled_data
+        model = factory.model_factory(config)
 
-        return result
+        data = np.expand_dims(data, axis=0)
+        data = np.expand_dims(data, axis=-1)
+        tensor = tf.convert_to_tensor(data, dtype=tf.float32)
+
+        pred = model.predict(tensor)
+
+        return pred
 
 
 def main():
@@ -63,8 +77,9 @@ def main():
     print("Segmentation")
     # predict.segment()
 
-    print("Mask pancreas")
+    print("Pancreas cancer probability")
     pred = predict.cancer_probability()
+    print(pred)
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ class Reader(interface.IReader):
 
         assert dicom.shape == self.mask.shape, "ERROR: DICOM and mask shapes are different"
 
-        dicom[self.mask == 0] = 0
+        # dicom[self.mask == 0] = 0
 
         return dicom, dicom_metadata
     
