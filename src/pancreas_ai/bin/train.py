@@ -37,7 +37,7 @@ def main():
                                                     monitor = config.MONITOR_METRIC,
                                                     mode = config.MONITOR_MODE,
                                                     verbose = 2,
-                                                    # save_best_only = True
+                                                    save_best_only = True
                                                     )
     csv_logger = tf.keras.callbacks.CSVLogger(get_csv_dir(), separator = ',', append = True)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(get_tensorboard_log_dir())
