@@ -21,7 +21,9 @@ class Augment(interface.IAugment):
         return rotate.random_rotate_data(data), mask
 
     def __pad_to_min_shape(self, arr:npt.NDArray, min_shape:npt.NDArray) -> npt.NDArray:
-        assert min_shape.shape == (3,) and min_shape.dtype == np.int32 and arr.ndim == 3
+        assert min_shape.shape == (3,)
+        assert min_shape.dtype == np.int32 or min_shape.dtype == np.int64, f"dtype {min_shape.dtype}"
+        assert arr.ndim == 3
 
         pad_arr = np.ceil((min_shape - arr.shape) / 2.0).astype(dtype=np.int32)
         pad_arr = np.where(pad_arr < 0, 0, pad_arr)
