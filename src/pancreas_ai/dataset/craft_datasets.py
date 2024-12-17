@@ -84,7 +84,7 @@ class Array3d_augment:
             finish_flip = time.time()
 
             start_rotate = time.time()
-            # data, label = self.augment.rotate(data, label, np.array([self.config.IMAGE_DIMENSION_X, self.config.IMAGE_DIMENSION_Y, self.config.IMAGE_DIMENSION_Z]))
+            data, label = self.augment.random_rotate(data, label)
             finish_rotate = time.time()
 
             start_flip = time.time()
