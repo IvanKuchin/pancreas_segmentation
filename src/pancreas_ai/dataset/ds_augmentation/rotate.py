@@ -18,7 +18,7 @@ def random_rotate_data_and_label(angle1: float, angle2: float, data: np.ndarray,
 
     return rotate_data(angle, axis, data), rotate_data(angle, axis, label)
 
-def random_rotate_data(angle1: float, angle2: float, data: np.ndarray) -> np.ndarray:
+def random_rotate_data(data: np.ndarray, angle1: float, angle2: float) -> np.ndarray:
     angle = np.random.uniform(angle1, angle2)
     axis = np.random.randint(0, data.ndim)
 

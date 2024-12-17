@@ -40,7 +40,9 @@ VALIDATION_PERCENTAGE = 0.15
 #
 # By keeping the range symmetric, after normalization we will have emtpy values == 0
 # it might not be important, but makes troubleshooting easier
-PANCREAS_MIN_HU =  -512
+# Anoter reasont could be that after rotating the image, empty values will be set tp 0
+# which is equal to the empty value in the original image
+PANCREAS_MIN_HU =  -1024
 PANCREAS_MAX_HU =   1024
 
 # segmentation
@@ -61,6 +63,7 @@ LABEL_CLASSIFICATION_DIMENSION = 1
 
 AUGMENTATION_SHIFT_MARGIN = 0.1
 AUGMENTATION_RANDOM_SCALE = 0.1
+AUGMENTATION_ROTATE_DEGREES = 10
 
 MIN_LABEL = 0
 MAX_LABEL = 1

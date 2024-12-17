@@ -18,7 +18,7 @@ class Augment(interface.IAugment):
         return flip.random_flip_data(data), mask
 
     def random_rotate(self, data:npt.NDArray[np.float32], mask:npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
-        return rotate.random_rotate_data(data), mask
+        return rotate.random_rotate_data(data, -self.config.AUGMENTATION_ROTATE_DEGREES, self.config.AUGMENTATION_ROTATE_DEGREES), mask
 
     def __pad_to_min_shape(self, arr:npt.NDArray, min_shape:npt.NDArray) -> npt.NDArray:
         assert min_shape.shape == (3,)
