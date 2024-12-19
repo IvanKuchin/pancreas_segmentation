@@ -42,9 +42,9 @@ VALIDATION_PERCENTAGE = 0.15
 # it might not be important, but makes troubleshooting easier
 # Anoter reasont could be that after rotating the image, empty values will be set tp 0
 # which is equal to the empty value in the original image
-PANCREAS_MIN_HU =  -1024
 PANCREAS_MAX_HU =   1024
 
+PANCREAS_MIN_HU =  -1024
 # segmentation
 # IMAGE_DIMENSION_X = 160    
 # IMAGE_DIMENSION_Y = IMAGE_DIMENSION_X
