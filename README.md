@@ -119,8 +119,12 @@ Note about Windows Docker Desktop: it might not br able to completelly finish th
 ### Option 2. Python package (preferred)
 
 1. Install python >= 3.12
-2. Create virtual environment: `python -m venv .venv`
-3. Install pancreas_ai: `pip install git+https://github.com/IvanKuchin/pancreas_segmentation`
-4. Create folder *predict* `mkdir predict`
-5. Run the inference: `predict`
+2. (Optional) Create virtual environment: `python -m venv .venv`
+3. (Optional) Activate virtual environment: .venv/Scripts/activate
+4. Install pancreas_ai: `pip install git+https://github.com/IvanKuchin/pancreas_segmentation`
+5. Create folder `checkpoints`
+6. Download latest version of [weights.keras](https://huggingface.co/IvanKuchin/pancreas_cancer_classification/tree/main)
+7. Create folder *predict* `mkdir predict`
+8. Copy a single patient dcim CTs into predict folder
+9. Run the inference: `predict`
 
