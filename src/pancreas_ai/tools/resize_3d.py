@@ -14,7 +14,9 @@ def resize_3d_image(image: npt.NDArray, new_size: npt.NDArray) -> npt.NDArray:
     """
     Resize a 3D image to the specified dimensions
     """
-    assert new_size.shape == (3,) and new_size.dtype == np.int32 and image.ndim == 3
+    assert new_size.shape == (3,)
+    assert new_size.dtype == np.int32 or new_size.dtype == np.int64
+    assert image.ndim == 3
     zoomed_img = __resize_along_axis_np(image, new_size[:2], 2)
     zoomed_img = __resize_along_axis_np(zoomed_img, new_size[1:], 0)
     return zoomed_img

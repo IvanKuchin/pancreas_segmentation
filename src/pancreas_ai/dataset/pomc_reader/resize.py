@@ -9,7 +9,7 @@ import tensorflow as tf
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from tools import resize_3d
-import config
+from pancreas_ai import config
 
 
 DEBUG_DATALOADER = True
