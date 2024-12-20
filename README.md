@@ -102,7 +102,7 @@ All information about training/metrics/results as well as trained weights are on
 Temporarily in classification part we use [TotalSegmentor](https://pubs.rsna.org/doi/10.1148/ryai.230024) due to it is better capability to segment CT from different scaners, rather than our training set limited to a single one.  
 We will switch to our model, this will significantly save on inference time.
 
-### Option 1. Docker container (preferred)
+### Option 1. Docker container
 
 1. Install [docker](https://docs.docker.com/engine/install/)
 2. Run any terminal. It is required to get the prediction probability
@@ -114,8 +114,9 @@ We will switch to our model, this will significantly save on inference time.
 Container size is huge (~14 GB). It will take sometime to download it from registry.  
 Total segmentor downlaods and run inference afainst several models
 
+Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
 
-### Option 2. Python package
+### Option 2. Python package (preferred)
 
 1. Install python >= 3.12
 2. Create virtual environment: `python -m venv .venv`
