@@ -75,7 +75,7 @@ def main():
         return
 
     print("Segmentation")
-    # predict.segment()
+    predict.segment()
 
     print("Pancreas cancer probability calculation...")
     pred = predict.cancer_probability()
@@ -90,4 +90,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
