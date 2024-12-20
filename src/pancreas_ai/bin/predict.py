@@ -77,10 +77,17 @@ def main():
     print("Segmentation")
     # predict.segment()
 
-    print("Pancreas cancer probability")
+    print("Pancreas cancer probability calculation...")
     pred = predict.cancer_probability()
-    print(pred)
+    pred = pred[0][0]
+    print("probaility of cancer:", np.round(pred, 2))
+    if pred > 0.7:
+        print("Cancer detected")
+    if pred < 0.3:
+        print("Cancer not detected")
+
 
 
 if __name__ == "__main__":
     main()
+    
