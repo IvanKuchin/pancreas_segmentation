@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pancreas_ai"
+version = "0.0.1"
+dependencies = [
+    'importlib-metadata; python_version>="3.12"',
+    "tensorflow",
+    "pydicom",
+    "pynrrd",
+    "nibabel",
+    "scikit-image",
+    "totalsegmentator",
+]
+
+[tool.setuptools.packages.find]
+# All the following settings are optional:
+where = ["src"]                 # ["."] by default
+include = ["*"]                 # ["*"] by default
+exclude = ["mypackage.tests*"]  # empty by default
+namespaces = false              # true by default
+
+[project.scripts]
+train = "pancreas_ai.bin.train:main"
+predict = "pancreas_ai.bin.predict:main"
