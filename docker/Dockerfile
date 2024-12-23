@@ -7,13 +7,21 @@ FROM python:3.12 AS app
 
 ARG APP_FOLDER=/app
 
-COPY . ${APP_FOLDER}
+RUN pip install tensorflow totalsegmentator
+
+RUN python `python -c "import os; import totalsegmentator; print(os.path.dirname(totalsegmentator.__file__))"`/download_pretrained_weights.py
+
+# taken from TotalSegmentator Dockerfile 
+# https://github.com/wasserth/TotalSegmentator/blob/master/Dockerfile
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 xvfb -y
+RUN pip install fury
 
 WORKDIR ${APP_FOLDER}
 
-RUN pip install tensorflow
-RUN pip install -r requirements.txt
+COPY . ${APP_FOLDER}
+
+RUN pip install .
 
 COPY --from=helper /app/weights.keras ${APP_FOLDER}/checkpoints/weights.keras
 
-CMD ["python", "./src/pancreas_ai/bin/predict.py"]
+CMD ["predict"]
