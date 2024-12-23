@@ -36,7 +36,7 @@ class Predict:
         return True
     
     def segment(self):
-        segmentation = totalsegmentator(self.ct_folder, fastest=False)
+        segmentation = totalsegmentator(self.ct_folder, fastest=False, verbose=True)
         nib.save(segmentation, self.mask_file)
 
     def cancer_probability(self) -> np.array:
