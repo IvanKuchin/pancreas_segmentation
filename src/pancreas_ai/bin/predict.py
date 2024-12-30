@@ -4,7 +4,6 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from totalsegmentator.python_api import totalsegmentator
 import nibabel as nib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -34,8 +33,12 @@ class Predict:
                     return True
 
         return True
-    
+
+    def mask_file_exists(self):
+        return os.path.exists(self.mask_file)
+
     def segment(self):
+        from totalsegmentator.python_api import totalsegmentator
         segmentation = totalsegmentator(self.ct_folder, fastest=False, verbose=True)
         nib.save(segmentation, self.mask_file)
 
@@ -67,15 +70,19 @@ class Predict:
 def main():
     predict = Predict(config)
 
-    print("Searching for a folder with CT-scan", end="")
+    print("Searching for a folder with CT-scan ... ", end="")
     if predict.is_ct_folder_exists():
         print("\tok") 
     else:
         print("\tfail")
         return
 
-    print("Segmentation")
-    predict.segment()
+    print("Searching for a segmentation mask ... ", end="")
+    if predict.mask_file_exists():
+        print("\tfound")
+    else:
+        print("\tmask not found. Segmentation...")
+        predict.segment()
 
     print("Pancreas cancer probability calculation...")
     pred = predict.cancer_probability()
