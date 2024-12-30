@@ -55,6 +55,6 @@ RUN pip install .
 
 COPY --from=helper /app/weights.keras ${APP_FOLDER}/checkpoints/weights.keras
 
-RUN chmod +x ${APP_FOLDER}/entrypoint.sh
+RUN chmod +x ${APP_FOLDER}/docker/entrypoint.sh
 
 CMD ["docker/entrypoint.sh"]
