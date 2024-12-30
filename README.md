@@ -111,7 +111,7 @@ We will switch to our model, this will significantly save on inference time.
 5.  Wait about 10-15 mins
 6.  Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
 
-Container size is huge (~21 GB). It will take sometime to download it from registry.
+Container size is huge (~21 GB). It will take sometime to pull it from registry.
 
 Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
 
