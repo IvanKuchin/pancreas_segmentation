@@ -12,7 +12,7 @@ dependencies = [
     "pynrrd",
     "nibabel",
     "scikit-image",
-    "totalsegmentator",
+#    "totalsegmentator",
 ]
 
 [tool.setuptools.packages.find]
