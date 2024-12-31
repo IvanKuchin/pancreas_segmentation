@@ -125,8 +125,6 @@ We will switch to our model, this will significantly save on inference time.
 
 Container size is huge (~21 GB). It will take sometime to pull it from registry.
 
-Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
-
 ### Option 3. Docker container (build)
 
 1. Install [docker](https://docs.docker.com/engine/install/)
@@ -136,8 +134,3 @@ Note about Windows Docker Desktop: it might not br able to completelly finish th
 5. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`  (very slow: 10-15 mins)
 6. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai` (requires NVIDIA GPU)
 7. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
-
-Container size is huge (~21 GB). It will take sometime to pull it from registry.
-
-Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
-
