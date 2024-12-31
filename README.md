@@ -100,14 +100,14 @@ All information about training/metrics/results as well as trained weights are on
 ## Inference
 
 Temporarily in classification part we use [TotalSegmentor](https://pubs.rsna.org/doi/10.1148/ryai.230024) due to it is better capability to segment CT from different scaners, rather than our training set limited to a single one.  
-We will switch to our model, this will significantly save on inference time.
+We will switch to our model (at some point), this will significantly save on inference time.
 
 ### Option 1. Python package (preferred)
 
 1. Install python >= 3.12
 2. (Optional) Create virtual environment: `python -m venv .venv`
 3. (Optional) Activate virtual environment: .venv/Scripts/activate
-4. Install pancreas_ai: `pip install git+https://github.com/IvanKuchin/pancreas_segmentation`
+4. Install pancreas_ai: `pip install git+https://github.com/IvanKuchin/pancreas_segmentation totalsegmentator`
 5. Create folder `checkpoints`
 6. Download latest version of [weights.keras](https://huggingface.co/IvanKuchin/pancreas_cancer_classification/tree/main)
 7. Create folder *predict* `mkdir predict`
@@ -119,8 +119,8 @@ We will switch to our model, this will significantly save on inference time.
 1. Install [docker](https://docs.docker.com/engine/install/)
 2. Run any terminal. It is required to get the prediction probability
 3. Place a single CT scan in dicom-format into a folder
-4. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict _______`  (very slow: 10-15 mins)
-5. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict _______` (requires NVIDIA GPU)
+4. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict ikuchin063/pancreas_segmentation`  (very slow: 10-15 mins)
+5. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict ikuchin063/pancreas_segmentation` (requires NVIDIA GPU)
 6. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
 
 Container size is huge (~21 GB). It will take sometime to pull it from registry.
