@@ -111,7 +111,7 @@ We will switch to our model, this will significantly save on inference time.
 5. Create folder `checkpoints`
 6. Download latest version of [weights.keras](https://huggingface.co/IvanKuchin/pancreas_cancer_classification/tree/main)
 7. Create folder *predict* `mkdir predict`
-8. Copy a single patient dcim CTs into predict folder
+8. Copy a single patient dcim CTs into the `predict` folder
 9. Run the inference: `predict`
 
 ### Option 2. Docker container (download from hub.docker.com)
