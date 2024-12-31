@@ -100,7 +100,7 @@ All information about training/metrics/results as well as trained weights are on
 ## Inference
 
 Temporarily in classification part we use [TotalSegmentor](https://pubs.rsna.org/doi/10.1148/ryai.230024) due to it is better capability to segment CT from different scaners, rather than our training set limited to a single one.  
-We will switch to our model (at some point), this will significantly save on inference time.
+Later we will switch to our model, this will significantly save on inference time.
 
 ### Option 1. Python package (preferred)
 
