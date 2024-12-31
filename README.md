@@ -120,7 +120,7 @@ We will switch to our model, this will significantly save on inference time.
 2. Run any terminal. It is required to get the prediction probability
 3. Place a single CT scan in dicom-format into a folder
 4. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict _______`  (very slow: 10-15 mins)
-5. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict _______`
+5. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict _______` (requires NVIDIA GPU)
 6. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
 
 Container size is huge (~21 GB). It will take sometime to pull it from registry.
@@ -134,7 +134,7 @@ Note about Windows Docker Desktop: it might not br able to completelly finish th
 3. Build container: `docker build https://github.com/IvanKuchin/pancreas_segmentation.git -f docker/Dockerfile -t pancreas_ai`
 4. Place a single CT scan in dicom-format into a folder
 5. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`  (very slow: 10-15 mins)
-6. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`
+6. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`(requires NVIDIA GPU)
 7. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
 
 Container size is huge (~21 GB). It will take sometime to pull it from registry.
