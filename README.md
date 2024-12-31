@@ -102,20 +102,7 @@ All information about training/metrics/results as well as trained weights are on
 Temporarily in classification part we use [TotalSegmentor](https://pubs.rsna.org/doi/10.1148/ryai.230024) due to it is better capability to segment CT from different scaners, rather than our training set limited to a single one.  
 We will switch to our model, this will significantly save on inference time.
 
-### Option 1. Docker container
-
-1. Install [docker](https://docs.docker.com/engine/install/)
-2. Run any terminal. It is required to get the prediction probability
-4. Place a single CT scan in dicom-format into a folder
-5. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict _______`  (very slow: 10-15 mins)
-6. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict _______`
-7. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
-
-Container size is huge (~21 GB). It will take sometime to pull it from registry.
-
-Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
-
-### Option 2. Python package (preferred)
+### Option 1. Python package (preferred)
 
 1. Install python >= 3.12
 2. (Optional) Create virtual environment: `python -m venv .venv`
@@ -126,4 +113,31 @@ Note about Windows Docker Desktop: it might not br able to completelly finish th
 7. Create folder *predict* `mkdir predict`
 8. Copy a single patient dcim CTs into predict folder
 9. Run the inference: `predict`
+
+### Option 2. Docker container (download from hub.docker.com)
+
+1. Install [docker](https://docs.docker.com/engine/install/)
+2. Run any terminal. It is required to get the prediction probability
+3. Place a single CT scan in dicom-format into a folder
+4. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict _______`  (very slow: 10-15 mins)
+5. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict _______`
+6. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
+
+Container size is huge (~21 GB). It will take sometime to pull it from registry.
+
+Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
+
+### Option 3. Docker container (build)
+
+1. Install [docker](https://docs.docker.com/engine/install/)
+2. Run any terminal. It is required to get the prediction probability
+3. Build container: `docker build https://github.com/IvanKuchin/pancreas_segmentation.git -f docker/Dockerfile -t pancreas_ai`
+4. Place a single CT scan in dicom-format into a folder
+5. CPU: `docker run -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`  (very slow: 10-15 mins)
+6. GPU: `docker run --gpus 'device=0' -it --rm -v <path to a CT folder>:/app/perdict pancreas_ai`
+7. Final line in the container output is the probability of having cancer. (0 - cancer-free, 1 - positive)
+
+Container size is huge (~21 GB). It will take sometime to pull it from registry.
+
+Note about Windows Docker Desktop: it might not br able to completelly finish the work, due to resource constraints on Win Docker Desktop,
 
